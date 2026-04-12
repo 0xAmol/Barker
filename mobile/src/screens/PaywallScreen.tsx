@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ScreenWrapper, Button } from '../components';
 import { useOnboarding } from '../context/OnboardingContext';
 import { colors, spacing, borderRadius } from '../constants/theme';
+
+const ONBOARDING_COMPLETE_KEY = '@barker_onboarding_complete';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -35,21 +38,28 @@ export function PaywallScreen({ navigation }: Props) {
     // Simulate API call to create account and start trial
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
+    // Save onboarding completion status
+    try {
+      await AsyncStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
+    } catch (e) {
+      // Handle save error silently
+    }
+
     setLoading(false);
 
-    // In production, this would:
-    // 1. Create the user account
-    // 2. Create the Barker agent
-    // 3. Navigate to the main app/dashboard
+    // Show welcome message and navigate to main app
     Alert.alert(
-      'Welcome to Barker! 🎉',
+      'Welcome to Barker!',
       'Your agent is now active and monitoring for leads. You\'ll get a text when someone wants a quote.',
       [
         {
           text: 'Got it!',
           onPress: () => {
-            // Navigate to main app
-            // navigation.reset({ index: 0, routes: [{ name: 'Dashboard' }] });
+            // Navigate to main app with reset to prevent going back
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'MainApp' }],
+            });
           },
         },
       ]
