@@ -68,19 +68,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.screen,
+    paddingBottom: spacing.xxl,
   },
   content: {
     flex: 1,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.screen,
   },
   footer: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.lg,
     paddingBottom: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
     backgroundColor: colors.background,
   },
 });

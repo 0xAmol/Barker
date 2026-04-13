@@ -41,7 +41,7 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-// Custom dark theme matching Barker brand
+// Premium dark theme
 const BarkerTheme = {
   ...DefaultTheme,
   dark: true,
@@ -51,7 +51,7 @@ const BarkerTheme = {
     background: colors.background,
     card: colors.backgroundCard,
     text: colors.textPrimary,
-    border: colors.border,
+    border: colors.separator,
     notification: colors.accent,
   },
 };
@@ -90,7 +90,8 @@ export default function App() {
             initialRouteName={hasCompletedOnboarding ? 'MainApp' : 'Welcome'}
             screenOptions={{
               headerShown: false,
-              animation: 'slide_from_right',
+              animation: 'fade',
+              animationDuration: 200,
               contentStyle: { backgroundColor: colors.background },
             }}
           >

@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
-import { colors, borderRadius, spacing } from '../constants/theme';
+import { colors, fontSize, borderRadius, spacing } from '../constants/theme';
 
 interface SelectableOptionProps {
   label: string;
@@ -30,6 +30,7 @@ export function SelectableOption({
       )}
       {emoji && <Text style={styles.emoji}>{emoji}</Text>}
       <Text style={[styles.label, selected && styles.labelSelected]}>{label}</Text>
+      {!multiSelect && selected && <Text style={styles.selectedIndicator}>✓</Text>}
     </TouchableOpacity>
   );
 }
@@ -39,24 +40,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   selected: {
-    backgroundColor: colors.accentSubtle,
-    borderColor: colors.accent,
+    backgroundColor: colors.accentDim,
   },
   checkbox: {
     width: 22,
     height: 22,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: colors.border,
-    marginRight: 12,
+    borderColor: colors.separator,
+    marginRight: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -66,19 +64,24 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: colors.background,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
   },
   emoji: {
-    fontSize: 24,
-    marginRight: 12,
+    fontSize: 22,
+    marginRight: spacing.md,
   },
   label: {
     flex: 1,
-    fontSize: 16,
+    fontSize: fontSize.body,
     color: colors.textPrimary,
   },
   labelSelected: {
     color: colors.accent,
+  },
+  selectedIndicator: {
+    fontSize: fontSize.body,
+    color: colors.accent,
+    fontWeight: '600',
   },
 });

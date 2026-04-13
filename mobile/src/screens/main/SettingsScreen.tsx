@@ -6,252 +6,157 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  TextInput,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing, borderRadius } from '../../constants/theme';
+import { colors, fontSize, spacing, borderRadius } from '../../constants/theme';
 import { MOCK_STATS } from '../../data/mockData';
 
 interface SettingRowProps {
   label: string;
   value?: string;
   onPress?: () => void;
+  showChevron?: boolean;
   rightElement?: React.ReactNode;
+  isLast?: boolean;
 }
 
-function SettingRow({ label, value, onPress, rightElement }: SettingRowProps) {
+function SettingRow({ label, value, onPress, showChevron = true, rightElement, isLast }: SettingRowProps) {
   const content = (
-    <View style={styles.settingRow}>
-      <Text style={styles.settingLabel}>{label}</Text>
+    <View style={styles.row}>
+      <Text style={styles.rowLabel}>{label}</Text>
       {rightElement || (
-        <View style={styles.settingRight}>
-          {value && <Text style={styles.settingValue}>{value}</Text>}
-          {onPress && <Text style={styles.chevron}>›</Text>}
+        <View style={styles.rowRight}>
+          {value && <Text style={styles.rowValue}>{value}</Text>}
+          {onPress && showChevron && <Text style={styles.chevron}>›</Text>}
         </View>
       )}
+      {!isLast && <View style={styles.rowSeparator} />}
     </View>
   );
 
   if (onPress) {
     return (
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.6}>
         {content}
       </TouchableOpacity>
     );
   }
-
   return content;
-}
-
-function SectionHeader({ title }: { title: string }) {
-  return <Text style={styles.sectionHeader}>{title}</Text>;
 }
 
 export function SettingsScreen() {
   const [isBarkerActive, setIsBarkerActive] = useState(MOCK_STATS.agentStatus === 'active');
   const [notifyNewLeads, setNotifyNewLeads] = useState(true);
   const [notifyDailySummary, setNotifyDailySummary] = useState(true);
-  const [notifyLowCredits, setNotifyLowCredits] = useState(true);
-  const [editingServiceArea, setEditingServiceArea] = useState(false);
-  const [serviceArea, setServiceArea] = useState('Katy, Sugar Land, Houston Heights');
 
   const handleToggleBarker = (value: boolean) => {
     setIsBarkerActive(value);
-    if (value) {
-      Alert.alert('Barker Resumed', 'Your agent is now scanning for leads.');
-    } else {
-      Alert.alert('Barker Paused', 'Your agent has stopped scanning. You can resume anytime.');
-    }
-  };
-
-  const handleBuyCredits = () => {
-    Alert.alert('Coming Soon', 'Credit purchase will be available in the next update.');
-  };
-
-  const handleEditBrandVoice = () => {
-    Alert.alert('Brand Voice', 'Edit your brand voice settings to customize how Barker represents your business.');
-  };
-
-  const handleEditGroups = () => {
-    Alert.alert('Facebook Groups', 'Manage which groups Barker monitors for leads.');
-  };
-
-  const handleSupport = () => {
-    Alert.alert('Support', 'Email us at support@barker.app');
-  };
-
-  const handleLogout = () => {
-    Alert.alert('Log Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Log Out', style: 'destructive', onPress: () => {} },
-    ]);
+    Alert.alert(
+      value ? 'Barker Resumed' : 'Barker Paused',
+      value ? 'Your agent is now scanning for leads.' : 'Your agent has stopped scanning.'
+    );
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Settings</Text>
+          <Text style={styles.title}>Settings</Text>
         </View>
 
-        {/* Agent Status Card */}
-        <View style={styles.statusCard}>
-          <View style={styles.statusHeader}>
-            <View>
-              <Text style={styles.statusTitle}>Barker Agent</Text>
-              <Text style={styles.statusSubtitle}>
-                {isBarkerActive ? 'Scanning for leads' : 'Paused'}
-              </Text>
-            </View>
-            <Switch
-              value={isBarkerActive}
-              onValueChange={handleToggleBarker}
-              trackColor={{ false: colors.border, true: 'rgba(46, 204, 113, 0.4)' }}
-              thumbColor={isBarkerActive ? '#2ECC71' : colors.textMuted}
-            />
-          </View>
-        </View>
-
-        {/* Credits Section */}
+        {/* Agent Control */}
         <View style={styles.section}>
-          <SectionHeader title="Credits" />
           <View style={styles.card}>
-            <View style={styles.creditsDisplay}>
+            <View style={styles.agentRow}>
               <View>
-                <Text style={styles.creditsValue}>{MOCK_STATS.creditsRemaining}</Text>
-                <Text style={styles.creditsLabel}>leads remaining</Text>
+                <Text style={styles.agentTitle}>Barker Agent</Text>
+                <Text style={styles.agentSubtitle}>
+                  {isBarkerActive ? 'Scanning for leads' : 'Paused'}
+                </Text>
               </View>
-              <TouchableOpacity style={styles.buyButton} onPress={handleBuyCredits}>
-                <Text style={styles.buyButtonText}>Buy More</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.creditsBar}>
-              <View
-                style={[
-                  styles.creditsBarFill,
-                  { width: `${Math.min((MOCK_STATS.creditsRemaining / 50) * 100, 100)}%` },
-                ]}
+              <Switch
+                value={isBarkerActive}
+                onValueChange={handleToggleBarker}
+                trackColor={{ false: colors.separator, true: colors.accent }}
+                thumbColor={colors.textPrimary}
               />
             </View>
-          </View>
-        </View>
-
-        {/* Service Area */}
-        <View style={styles.section}>
-          <SectionHeader title="Service Area" />
-          <View style={styles.card}>
-            {editingServiceArea ? (
-              <View>
-                <TextInput
-                  style={styles.textInput}
-                  value={serviceArea}
-                  onChangeText={setServiceArea}
-                  placeholder="Enter cities you serve..."
-                  placeholderTextColor={colors.textMuted}
-                  multiline
-                />
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={() => setEditingServiceArea(false)}
-                >
-                  <Text style={styles.saveButtonText}>Save</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <SettingRow
-                label="Cities you serve"
-                value={serviceArea}
-                onPress={() => setEditingServiceArea(true)}
-              />
-            )}
-          </View>
-        </View>
-
-        {/* Agent Settings */}
-        <View style={styles.section}>
-          <SectionHeader title="Agent Settings" />
-          <View style={styles.card}>
-            <SettingRow label="Brand Voice" value="Friendly, professional" onPress={handleEditBrandVoice} />
-            <View style={styles.divider} />
-            <SettingRow label="Facebook Groups" value="5 groups" onPress={handleEditGroups} />
           </View>
         </View>
 
         {/* Notifications */}
         <View style={styles.section}>
-          <SectionHeader title="Notifications" />
+          <Text style={styles.sectionLabel}>Notifications</Text>
           <View style={styles.card}>
             <SettingRow
-              label="New lead alerts"
+              label="New leads"
+              showChevron={false}
               rightElement={
                 <Switch
                   value={notifyNewLeads}
                   onValueChange={setNotifyNewLeads}
-                  trackColor={{ false: colors.border, true: `${colors.accent}66` }}
-                  thumbColor={notifyNewLeads ? colors.accent : colors.textMuted}
+                  trackColor={{ false: colors.separator, true: colors.accent }}
+                  thumbColor={colors.textPrimary}
                 />
               }
             />
-            <View style={styles.divider} />
             <SettingRow
               label="Daily summary"
+              showChevron={false}
+              isLast
               rightElement={
                 <Switch
                   value={notifyDailySummary}
                   onValueChange={setNotifyDailySummary}
-                  trackColor={{ false: colors.border, true: `${colors.accent}66` }}
-                  thumbColor={notifyDailySummary ? colors.accent : colors.textMuted}
+                  trackColor={{ false: colors.separator, true: colors.accent }}
+                  thumbColor={colors.textPrimary}
                 />
               }
             />
-            <View style={styles.divider} />
-            <SettingRow
-              label="Low credit warning"
-              rightElement={
-                <Switch
-                  value={notifyLowCredits}
-                  onValueChange={setNotifyLowCredits}
-                  trackColor={{ false: colors.border, true: `${colors.accent}66` }}
-                  thumbColor={notifyLowCredits ? colors.accent : colors.textMuted}
-                />
-              }
-            />
+          </View>
+        </View>
+
+        {/* Business */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Business</Text>
+          <View style={styles.card}>
+            <SettingRow label="Business name" value="Johnson Plumbing" onPress={() => {}} />
+            <SettingRow label="Service area" value="Katy, Houston" onPress={() => {}} />
+            <SettingRow label="Brand voice" value="Friendly" onPress={() => {}} isLast />
           </View>
         </View>
 
         {/* Account */}
         <View style={styles.section}>
-          <SectionHeader title="Account" />
+          <Text style={styles.sectionLabel}>Account</Text>
           <View style={styles.card}>
-            <SettingRow label="Business Name" value="Johnson Plumbing" onPress={() => {}} />
-            <View style={styles.divider} />
-            <SettingRow label="Email" value="dave@johnsonplumbing.com" onPress={() => {}} />
-            <View style={styles.divider} />
-            <SettingRow label="Phone" value="(832) 555-0147" onPress={() => {}} />
+            <SettingRow label="Email" value="dave@johnson.com" onPress={() => {}} />
+            <SettingRow label="Phone" value="(832) 555-0147" onPress={() => {}} isLast />
           </View>
         </View>
 
         {/* Support */}
         <View style={styles.section}>
-          <SectionHeader title="Support" />
           <View style={styles.card}>
-            <SettingRow label="Help Center" onPress={handleSupport} />
-            <View style={styles.divider} />
-            <SettingRow label="Contact Support" onPress={handleSupport} />
+            <SettingRow label="Help & Support" onPress={() => Alert.alert('Support', 'support@barker.app')} />
+            <SettingRow label="Terms of Service" onPress={() => {}} />
+            <SettingRow label="Privacy Policy" onPress={() => {}} isLast />
           </View>
         </View>
 
         {/* Logout */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={() => Alert.alert('Log Out', 'Are you sure?', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Log Out', style: 'destructive' },
+          ])}
+        >
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
 
-        {/* Version */}
-        <Text style={styles.version}>Barker v1.0.0</Text>
-
-        <View style={styles.bottomPadding} />
+        <Text style={styles.version}>Version 1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -262,169 +167,99 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+  content: {
+    paddingBottom: spacing.xxl,
   },
-  headerTitle: {
-    fontSize: 24,
+  header: {
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+  title: {
+    fontSize: fontSize.hero,
     fontWeight: '700',
     color: colors.textPrimary,
-  },
-  statusCard: {
-    margin: spacing.lg,
-    backgroundColor: colors.backgroundCard,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  statusHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  statusTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  statusSubtitle: {
-    fontSize: 13,
-    color: colors.textMuted,
-    marginTop: 2,
+    letterSpacing: -0.5,
   },
   section: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.section,
   },
-  sectionHeader: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textMuted,
+  sectionLabel: {
+    fontSize: fontSize.footnote,
+    fontWeight: '500',
+    color: colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.screen,
     marginBottom: spacing.sm,
   },
   card: {
-    marginHorizontal: spacing.lg,
+    marginHorizontal: spacing.screen,
     backgroundColor: colors.backgroundCard,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
+    borderRadius: borderRadius.md,
   },
-  settingRow: {
+  row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: spacing.md,
+    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
   },
-  settingLabel: {
-    fontSize: 15,
+  rowLabel: {
+    fontSize: fontSize.body,
     color: colors.textPrimary,
-    flex: 1,
   },
-  settingRight: {
+  rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  settingValue: {
-    fontSize: 14,
-    color: colors.textMuted,
-    maxWidth: 180,
-    textAlign: 'right',
+  rowValue: {
+    fontSize: fontSize.body,
+    color: colors.textSecondary,
   },
   chevron: {
     fontSize: 20,
-    color: colors.textMuted,
+    color: colors.textTertiary,
     marginLeft: spacing.sm,
   },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginLeft: spacing.md,
+  rowSeparator: {
+    position: 'absolute',
+    bottom: 0,
+    left: spacing.lg,
+    right: 0,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.separator,
   },
-  creditsDisplay: {
+  agentRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: spacing.md,
+    padding: spacing.lg,
   },
-  creditsValue: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: colors.accent,
-  },
-  creditsLabel: {
-    fontSize: 13,
-    color: colors.textMuted,
-  },
-  buyButton: {
-    backgroundColor: colors.accent,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-  },
-  buyButtonText: {
-    fontSize: 14,
+  agentTitle: {
+    fontSize: fontSize.body,
     fontWeight: '600',
-    color: colors.background,
-  },
-  creditsBar: {
-    height: 6,
-    backgroundColor: colors.border,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  creditsBarFill: {
-    height: '100%',
-    backgroundColor: colors.accent,
-    borderRadius: 3,
-  },
-  textInput: {
-    padding: spacing.md,
-    fontSize: 15,
     color: colors.textPrimary,
-    minHeight: 60,
   },
-  saveButton: {
-    backgroundColor: colors.accent,
-    margin: spacing.md,
-    marginTop: 0,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.background,
+  agentSubtitle: {
+    fontSize: fontSize.footnote,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
   logoutButton: {
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    backgroundColor: 'rgba(231, 76, 60, 0.15)',
+    marginHorizontal: spacing.screen,
+    marginTop: spacing.lg,
+    paddingVertical: 14,
     alignItems: 'center',
   },
   logoutText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#E74C3C',
+    fontSize: fontSize.body,
+    color: colors.error,
   },
   version: {
     textAlign: 'center',
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: spacing.lg,
-  },
-  bottomPadding: {
-    height: spacing.xxl,
+    fontSize: fontSize.footnote,
+    color: colors.textTertiary,
+    marginTop: spacing.xl,
   },
 });

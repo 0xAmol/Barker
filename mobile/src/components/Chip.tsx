@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
-import { colors, borderRadius, spacing } from '../constants/theme';
+import { colors, fontSize, borderRadius, spacing } from '../constants/theme';
 
 interface ChipProps {
   label: string;
@@ -39,20 +39,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.full,
-    borderWidth: 1,
-    borderColor: colors.border,
     marginRight: spacing.sm,
     marginBottom: spacing.sm,
   },
   selected: {
-    backgroundColor: colors.accentSubtle,
-    borderColor: colors.accent,
+    backgroundColor: colors.accentDim,
   },
   label: {
-    fontSize: 14,
+    fontSize: fontSize.footnote,
     color: colors.textSecondary,
   },
   labelSelected: {
@@ -63,14 +60,14 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: colors.border,
+    backgroundColor: colors.separator,
     alignItems: 'center',
     justifyContent: 'center',
   },
   removeText: {
     color: colors.textPrimary,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '600',
     lineHeight: 16,
   },
 });

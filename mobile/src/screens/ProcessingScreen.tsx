@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.accentSubtle,
+    backgroundColor: colors.accentDim,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xl,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.border,
+    backgroundColor: colors.separator,
   },
   dotActive: {
     backgroundColor: colors.accent,

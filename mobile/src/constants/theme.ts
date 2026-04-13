@@ -1,54 +1,64 @@
-// Barker brand colors and theme constants
+// Premium iOS-inspired theme for Barker
 
 export const colors = {
-  // Background
-  background: '#0c0b09',
-  backgroundLight: '#141311',
-  backgroundCard: '#1a1815',
+  // Background - Pure black
+  background: '#000000',
+  backgroundElevated: '#1C1C1E',
+  backgroundCard: '#1C1C1E',
 
-  // Text
-  textPrimary: '#ece6d8',
-  textSecondary: '#b0a898',
-  textMuted: '#6e675d',
+  // Text hierarchy
+  textPrimary: '#FFFFFF',
+  textSecondary: '#8E8E93',
+  textTertiary: '#48484A',
 
-  // Accent
-  accent: '#d4a843',
-  accentHover: '#f0c850',
-  accentDark: '#8a6e2a',
-  accentSubtle: '#1e1a12',
-
-  // Borders
-  border: '#302b22',
-  borderFocus: '#8a6e2a',
+  // Accent - Gold (use sparingly)
+  accent: '#D4A843',
+  accentDim: 'rgba(212, 168, 67, 0.15)',
 
   // Status
-  success: '#3fba5e',
-  successBg: '#1a3a22',
-  error: '#e54d4d',
-  errorBg: '#3a1a1a',
+  success: '#34C759',
+  warning: '#FF9F0A',
+  error: '#FF453A',
+
+  // Separators
+  separator: 'rgba(84, 84, 88, 0.35)',
+  separatorOpaque: '#38383A',
 };
 
 export const fonts = {
   regular: 'System',
   medium: 'System',
+  semibold: 'System',
   bold: 'System',
-  serif: 'System',
+};
+
+export const fontSize = {
+  hero: 34,
+  headline: 28,
+  title: 22,
+  body: 17,
+  callout: 16,
+  subhead: 15,
+  footnote: 13,
+  caption: 12,
 };
 
 export const spacing = {
   xs: 4,
   sm: 8,
-  md: 16,
-  lg: 24,
-  xl: 32,
-  xxl: 48,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  xxl: 32,
+  section: 32,
+  screen: 24,
 };
 
 export const borderRadius = {
   sm: 8,
   md: 12,
   lg: 16,
-  xl: 24,
+  xl: 20,
   full: 100,
 };
 

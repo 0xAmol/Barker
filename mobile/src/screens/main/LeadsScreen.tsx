@@ -6,28 +6,21 @@ import {
   FlatList,
   TouchableOpacity,
   Linking,
-  Alert,
   TextInput,
   Modal,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing, borderRadius } from '../../constants/theme';
+import { colors, fontSize, spacing, borderRadius } from '../../constants/theme';
 import { Lead } from '../../types/activity';
 import { MOCK_LEADS } from '../../data/mockData';
 
-const STATUS_CONFIG = {
-  new: { label: 'New', color: '#d4a843', bg: 'rgba(212, 168, 67, 0.15)' },
-  contacted: { label: 'Contacted', color: '#3498DB', bg: 'rgba(52, 152, 219, 0.15)' },
-  won: { label: 'Won', color: '#2ECC71', bg: 'rgba(46, 204, 113, 0.15)' },
-  lost: { label: 'Lost', color: '#E74C3C', bg: 'rgba(231, 76, 60, 0.15)' },
-  no_answer: { label: 'No Answer', color: '#95A5A6', bg: 'rgba(149, 165, 166, 0.15)' },
-};
-
-const URGENCY_LABELS = {
-  today: '🔥 Today',
-  this_week: '📅 This week',
-  this_month: '📆 This month',
-  flexible: '⏳ Flexible',
+const STATUS_COLORS: Record<string, string> = {
+  new: colors.accent,
+  contacted: colors.textSecondary,
+  won: colors.success,
+  lost: colors.error,
+  no_answer: colors.textTertiary,
 };
 
 function formatTimeAgo(date: Date): string {
@@ -36,7 +29,7 @@ function formatTimeAgo(date: Date): string {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   if (days === 1) return 'Yesterday';
-  return `${days} days ago`;
+  return `${days}d ago`;
 }
 
 interface LeadCardProps {
@@ -46,20 +39,17 @@ interface LeadCardProps {
 }
 
 function LeadCard({ lead, onCall, onStatusChange }: LeadCardProps) {
-  const [showActions, setShowActions] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [showRevenueModal, setShowRevenueModal] = useState(false);
   const [revenue, setRevenue] = useState('');
 
-  const statusConfig = STATUS_CONFIG[lead.status];
-
   const handleWon = () => {
-    setShowActions(false);
+    setExpanded(false);
     setShowRevenueModal(true);
   };
 
   const handleSubmitRevenue = () => {
-    const revenueValue = parseFloat(revenue) || 0;
-    onStatusChange('won', revenueValue);
+    onStatusChange('won', parseFloat(revenue) || 0);
     setShowRevenueModal(false);
     setRevenue('');
   };
@@ -68,90 +58,71 @@ function LeadCard({ lead, onCall, onStatusChange }: LeadCardProps) {
     <>
       <TouchableOpacity
         style={styles.card}
-        onPress={() => setShowActions(!showActions)}
-        activeOpacity={0.8}
+        onPress={() => setExpanded(!expanded)}
+        activeOpacity={0.7}
       >
-        {/* Header */}
-        <View style={styles.cardHeader}>
-          <View style={styles.cardHeaderLeft}>
+        <View style={styles.cardMain}>
+          <View style={styles.cardContent}>
             <Text style={styles.leadName}>{lead.name}</Text>
-            <Text style={styles.leadTime}>{formatTimeAgo(lead.createdAt)}</Text>
+            <Text style={styles.leadService}>{lead.serviceNeeded}</Text>
+            <View style={styles.cardMeta}>
+              <Text style={styles.metaText}>{lead.location}</Text>
+              <Text style={styles.metaDot}>·</Text>
+              <Text style={styles.metaText}>{formatTimeAgo(lead.createdAt)}</Text>
+            </View>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
-            <Text style={[styles.statusText, { color: statusConfig.color }]}>
-              {statusConfig.label}
-            </Text>
-          </View>
+          <View style={[styles.statusDot, { backgroundColor: STATUS_COLORS[lead.status] }]} />
         </View>
 
-        {/* Service needed */}
-        <Text style={styles.serviceNeeded}>{lead.serviceNeeded}</Text>
-
-        {/* Details row */}
-        <View style={styles.detailsRow}>
-          <Text style={styles.detailItem}>📍 {lead.location}</Text>
-          <Text style={styles.detailItem}>{URGENCY_LABELS[lead.urgency]}</Text>
-        </View>
-
-        {/* Source */}
-        <Text style={styles.source}>via {lead.source}</Text>
-
-        {/* Revenue if won */}
         {lead.status === 'won' && lead.revenue && (
-          <View style={styles.revenueRow}>
-            <Text style={styles.revenueLabel}>Revenue:</Text>
-            <Text style={styles.revenueValue}>${lead.revenue.toLocaleString()}</Text>
-          </View>
+          <Text style={styles.revenue}>${lead.revenue.toLocaleString()}</Text>
         )}
 
-        {/* Action buttons */}
-        {showActions && (
-          <View style={styles.actions}>
+        {expanded && (
+          <View style={styles.expandedContent}>
             <TouchableOpacity style={styles.callButton} onPress={onCall}>
-              <Text style={styles.callButtonText}>📞 Call {lead.name.split(' ')[0]}</Text>
+              <Text style={styles.callButtonText}>Call {lead.name.split(' ')[0]}</Text>
             </TouchableOpacity>
 
-            <View style={styles.statusActions}>
+            <View style={styles.statusButtons}>
               {lead.status !== 'won' && (
-                <TouchableOpacity
-                  style={[styles.statusButton, styles.wonButton]}
-                  onPress={handleWon}
-                >
-                  <Text style={styles.statusButtonText}>✓ Won</Text>
+                <TouchableOpacity style={styles.statusButton} onPress={handleWon}>
+                  <Text style={[styles.statusButtonText, { color: colors.success }]}>Won</Text>
                 </TouchableOpacity>
               )}
               {lead.status !== 'lost' && (
                 <TouchableOpacity
-                  style={[styles.statusButton, styles.lostButton]}
+                  style={styles.statusButton}
                   onPress={() => {
-                    setShowActions(false);
+                    setExpanded(false);
                     onStatusChange('lost');
                   }}
                 >
-                  <Text style={styles.statusButtonText}>✗ Lost</Text>
+                  <Text style={[styles.statusButtonText, { color: colors.error }]}>Lost</Text>
                 </TouchableOpacity>
               )}
               {lead.status !== 'no_answer' && lead.status !== 'won' && (
                 <TouchableOpacity
-                  style={[styles.statusButton, styles.noAnswerButton]}
+                  style={styles.statusButton}
                   onPress={() => {
-                    setShowActions(false);
+                    setExpanded(false);
                     onStatusChange('no_answer');
                   }}
                 >
-                  <Text style={styles.statusButtonText}>No Answer</Text>
+                  <Text style={styles.statusButtonText}>No answer</Text>
                 </TouchableOpacity>
               )}
             </View>
           </View>
         )}
+
+        <Text style={styles.source}>{lead.source}</Text>
       </TouchableOpacity>
 
-      {/* Revenue Modal */}
       <Modal visible={showRevenueModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modal}>
-            <Text style={styles.modalTitle}>🎉 Nice! How much did you close?</Text>
+            <Text style={styles.modalTitle}>Revenue from this job?</Text>
             <View style={styles.revenueInputContainer}>
               <Text style={styles.dollarSign}>$</Text>
               <TextInput
@@ -159,23 +130,23 @@ function LeadCard({ lead, onCall, onStatusChange }: LeadCardProps) {
                 value={revenue}
                 onChangeText={setRevenue}
                 placeholder="0"
-                placeholderTextColor={colors.textMuted}
+                placeholderTextColor={colors.textTertiary}
                 keyboardType="numeric"
                 autoFocus
               />
             </View>
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={styles.modalCancelButton}
+                style={styles.modalButton}
                 onPress={() => setShowRevenueModal(false)}
               >
-                <Text style={styles.modalCancelText}>Cancel</Text>
+                <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.modalSubmitButton}
+                style={[styles.modalButton, styles.modalButtonPrimary]}
                 onPress={handleSubmitRevenue}
               >
-                <Text style={styles.modalSubmitText}>Log Revenue</Text>
+                <Text style={styles.modalButtonPrimaryText}>Save</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -206,42 +177,33 @@ export function LeadsScreen() {
   };
 
   const stats = {
-    total: leads.length,
     new: leads.filter((l) => l.status === 'new').length,
     won: leads.filter((l) => l.status === 'won').length,
-    revenue: leads.filter((l) => l.status === 'won').reduce((sum, l) => sum + (l.revenue || 0), 0),
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Leads</Text>
-        <View style={styles.statsRow}>
-          <Text style={styles.statItem}>{stats.new} new</Text>
-          <Text style={styles.statDivider}>•</Text>
-          <Text style={styles.statItem}>{stats.won} won</Text>
-          <Text style={styles.statDivider}>•</Text>
-          <Text style={[styles.statItem, styles.statRevenue]}>${stats.revenue.toLocaleString()}</Text>
-        </View>
+        <Text style={styles.title}>Leads</Text>
+        <Text style={styles.subtitle}>
+          {stats.new} new · {stats.won} won
+        </Text>
       </View>
 
-      {/* Filter tabs */}
       <View style={styles.filters}>
-        {(['all', 'new', 'contacted', 'won', 'lost'] as const).map((f) => (
+        {(['all', 'new', 'contacted', 'won'] as const).map((f) => (
           <TouchableOpacity
             key={f}
             style={[styles.filterTab, filter === f && styles.filterTabActive]}
             onPress={() => setFilter(f)}
           >
             <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>
-              {f === 'all' ? 'All' : STATUS_CONFIG[f].label}
+              {f.charAt(0).toUpperCase() + f.slice(1)}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Lead list */}
       <FlatList
         data={filteredLeads}
         renderItem={({ item }) => (
@@ -256,11 +218,8 @@ export function LeadsScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>📭</Text>
             <Text style={styles.emptyText}>No leads yet</Text>
-            <Text style={styles.emptySubtext}>
-              Barker is scanning for customers. Check back soon!
-            </Text>
+            <Text style={styles.emptySubtext}>Barker is scanning for customers</Text>
           </View>
         }
       />
@@ -274,262 +233,206 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
   },
-  headerTitle: {
-    fontSize: 24,
+  title: {
+    fontSize: fontSize.hero,
     fontWeight: '700',
     color: colors.textPrimary,
+    letterSpacing: -0.5,
   },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  subtitle: {
+    fontSize: fontSize.subhead,
+    color: colors.textSecondary,
     marginTop: 4,
-  },
-  statItem: {
-    fontSize: 13,
-    color: colors.textMuted,
-  },
-  statDivider: {
-    fontSize: 13,
-    color: colors.border,
-    marginHorizontal: 8,
-  },
-  statRevenue: {
-    color: colors.accent,
-    fontWeight: '600',
   },
   filters: {
     flexDirection: 'row',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    gap: spacing.xs,
+    paddingHorizontal: spacing.screen,
+    paddingBottom: spacing.lg,
+    gap: spacing.sm,
   },
   filterTab: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: borderRadius.full,
-    backgroundColor: colors.backgroundCard,
   },
   filterTabActive: {
-    backgroundColor: colors.accentSubtle,
+    backgroundColor: colors.backgroundCard,
   },
   filterText: {
-    fontSize: 12,
-    color: colors.textMuted,
+    fontSize: fontSize.footnote,
+    color: colors.textTertiary,
     fontWeight: '500',
   },
   filterTextActive: {
-    color: colors.accent,
+    color: colors.textPrimary,
   },
   list: {
-    padding: spacing.lg,
-    gap: spacing.md,
+    paddingHorizontal: spacing.screen,
+    paddingBottom: spacing.xxl,
   },
   card: {
     backgroundColor: colors.backgroundCard,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.md,
+    borderRadius: borderRadius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
   },
-  cardHeader: {
+  cardMain: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: spacing.xs,
   },
-  cardHeaderLeft: {
+  cardContent: {
     flex: 1,
   },
   leadName: {
-    fontSize: 17,
+    fontSize: fontSize.title,
     fontWeight: '600',
     color: colors.textPrimary,
+    letterSpacing: -0.3,
   },
-  leadTime: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: borderRadius.full,
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  serviceNeeded: {
-    fontSize: 15,
+  leadService: {
+    fontSize: fontSize.subhead,
     color: colors.textSecondary,
-    marginBottom: spacing.sm,
+    marginTop: 4,
   },
-  detailsRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginBottom: spacing.xs,
-  },
-  detailItem: {
-    fontSize: 13,
-    color: colors.textMuted,
-  },
-  source: {
-    fontSize: 12,
-    color: colors.textMuted,
-    fontStyle: 'italic',
-  },
-  revenueRow: {
+  cardMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: spacing.sm,
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    marginTop: 8,
   },
-  revenueLabel: {
-    fontSize: 13,
-    color: colors.textMuted,
+  metaText: {
+    fontSize: fontSize.footnote,
+    color: colors.textTertiary,
   },
-  revenueValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#2ECC71',
-    marginLeft: spacing.xs,
+  metaDot: {
+    fontSize: fontSize.footnote,
+    color: colors.textTertiary,
+    marginHorizontal: 6,
   },
-  actions: {
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginTop: 6,
+  },
+  revenue: {
+    fontSize: fontSize.title,
+    fontWeight: '600',
+    color: colors.success,
     marginTop: spacing.md,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+  },
+  source: {
+    fontSize: fontSize.caption,
+    color: colors.textTertiary,
+    marginTop: spacing.md,
+  },
+  expandedContent: {
+    marginTop: spacing.lg,
+    paddingTop: spacing.lg,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.separator,
   },
   callButton: {
     backgroundColor: colors.accent,
-    borderRadius: borderRadius.md,
-    paddingVertical: 12,
+    borderRadius: borderRadius.sm,
+    paddingVertical: 14,
     alignItems: 'center',
-    marginBottom: spacing.sm,
   },
   callButtonText: {
-    fontSize: 15,
+    fontSize: fontSize.body,
     fontWeight: '600',
     color: colors.background,
   },
-  statusActions: {
+  statusButtons: {
     flexDirection: 'row',
+    marginTop: spacing.md,
     gap: spacing.sm,
   },
   statusButton: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: borderRadius.sm,
+    paddingVertical: 12,
     alignItems: 'center',
   },
-  wonButton: {
-    backgroundColor: 'rgba(46, 204, 113, 0.15)',
-  },
-  lostButton: {
-    backgroundColor: 'rgba(231, 76, 60, 0.15)',
-  },
-  noAnswerButton: {
-    backgroundColor: 'rgba(149, 165, 166, 0.15)',
-  },
   statusButtonText: {
-    fontSize: 13,
+    fontSize: fontSize.subhead,
     fontWeight: '500',
     color: colors.textSecondary,
   },
   empty: {
     alignItems: 'center',
-    paddingVertical: spacing.xxl,
-  },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: spacing.md,
+    paddingVertical: spacing.section * 2,
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: fontSize.body,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: spacing.xs,
   },
   emptySubtext: {
-    fontSize: 14,
-    color: colors.textMuted,
-    textAlign: 'center',
+    fontSize: fontSize.subhead,
+    color: colors.textSecondary,
+    marginTop: 4,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.lg,
+    padding: spacing.screen,
   },
   modal: {
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.lg,
-    padding: spacing.lg,
+    padding: spacing.xl,
     width: '100%',
-    maxWidth: 320,
+    maxWidth: 300,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: fontSize.body,
     fontWeight: '600',
     color: colors.textPrimary,
     textAlign: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
   },
   revenueInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.lg,
+    justifyContent: 'center',
+    marginBottom: spacing.xl,
   },
   dollarSign: {
-    fontSize: 24,
-    color: colors.textMuted,
-    marginRight: spacing.xs,
+    fontSize: 32,
+    color: colors.textTertiary,
+    marginRight: 4,
   },
   revenueInput: {
-    flex: 1,
-    fontSize: 32,
+    fontSize: 48,
     fontWeight: '700',
     color: colors.textPrimary,
-    paddingVertical: spacing.md,
+    minWidth: 100,
+    textAlign: 'center',
   },
   modalButtons: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
-  modalCancelButton: {
+  modalButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.background,
+    paddingVertical: 14,
+    borderRadius: borderRadius.sm,
     alignItems: 'center',
   },
-  modalCancelText: {
-    fontSize: 15,
-    color: colors.textMuted,
+  modalButtonText: {
+    fontSize: fontSize.body,
+    color: colors.textSecondary,
   },
-  modalSubmitButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: borderRadius.md,
+  modalButtonPrimary: {
     backgroundColor: colors.accent,
-    alignItems: 'center',
   },
-  modalSubmitText: {
-    fontSize: 15,
+  modalButtonPrimaryText: {
+    fontSize: fontSize.body,
     fontWeight: '600',
     color: colors.background,
   },

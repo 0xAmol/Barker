@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.separator,
     marginBottom: spacing.md,
   },
   cardHeader: {
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.accentSubtle,
+    backgroundColor: colors.accentDim,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.sm,
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   },
   cardRole: {
     fontSize: 13,
-    color: colors.textMuted,
+    color: colors.textTertiary,
   },
   stars: {
     fontSize: 14,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     fontSize: 12,
-    color: colors.textMuted,
+    color: colors.textTertiary,
     textAlign: 'center',
     marginTop: spacing.md,
     fontStyle: 'italic',

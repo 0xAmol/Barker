@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.textMuted,
+    color: colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: spacing.sm,
@@ -142,16 +142,16 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.separator,
   },
   browserBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.backgroundLight,
+    backgroundColor: colors.backgroundCard,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.separator,
   },
   browserDots: {
     flexDirection: 'row',
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   },
   urlText: {
     fontSize: 11,
-    color: colors.textMuted,
+    color: colors.textTertiary,
   },
   previewContent: {
     padding: spacing.md,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.separator,
   },
   statRow: {
     flexDirection: 'row',
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   replyContext: {
-    backgroundColor: colors.accentSubtle,
+    backgroundColor: colors.accentDim,
     borderRadius: borderRadius.sm,
     padding: spacing.sm,
     marginBottom: spacing.sm,
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.separator,
   },
   replyLabel: {
     fontSize: 12,

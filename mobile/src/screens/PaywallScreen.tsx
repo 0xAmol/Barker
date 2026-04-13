@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.separator,
     marginBottom: spacing.lg,
   },
   featuresTitle: {
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.separator,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -238,15 +238,15 @@ const styles = StyleSheet.create({
   },
   noCatchText: {
     fontSize: 13,
-    color: colors.textMuted,
+    color: colors.textTertiary,
     fontStyle: 'italic',
   },
   testimonialCard: {
-    backgroundColor: colors.accentSubtle,
+    backgroundColor: colors.accentDim,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.accentDark,
+    borderColor: colors.accent,
   },
   testimonialStars: {
     fontSize: 16,
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
   },
   pricingToggleText: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: colors.textTertiary,
     textDecorationLine: 'underline',
   },
 });

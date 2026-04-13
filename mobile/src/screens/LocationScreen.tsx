@@ -66,7 +66,7 @@ export function LocationScreen({ navigation }: Props) {
         <TextInput
           style={styles.input}
           placeholder="Enter your city or zip code"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={colors.textTertiary}
           value={inputValue}
           onChangeText={setInputValue}
           onSubmitEditing={handleAddLocation}
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.separator,
     borderRadius: borderRadius.md,
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 13,
-    color: colors.textMuted,
+    color: colors.textTertiary,
     marginBottom: spacing.sm,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   },
   helperText: {
     fontSize: 13,
-    color: colors.textMuted,
+    color: colors.textTertiary,
     textAlign: 'center',
     marginTop: spacing.md,
   },

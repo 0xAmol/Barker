@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { colors, TOTAL_STEPS } from '../constants/theme';
+import { colors, spacing, TOTAL_STEPS } from '../constants/theme';
 
 interface ProgressBarProps {
   currentStep: number;
@@ -20,19 +20,19 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 24,
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.lg,
   },
   track: {
-    height: 4,
-    backgroundColor: colors.border,
-    borderRadius: 2,
+    height: 3,
+    backgroundColor: colors.separator,
+    borderRadius: 1.5,
     overflow: 'hidden',
   },
   fill: {
     height: '100%',
     backgroundColor: colors.accent,
-    borderRadius: 2,
+    borderRadius: 1.5,
   },
 });

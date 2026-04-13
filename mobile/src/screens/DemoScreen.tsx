@@ -291,7 +291,7 @@ export function DemoScreen({ navigation }: Props) {
           <TextInput
             style={styles.input}
             placeholder="e.g. Johnson Roofing"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={colors.textTertiary}
             value={manualName}
             onChangeText={setManualName}
           />
@@ -302,7 +302,7 @@ export function DemoScreen({ navigation }: Props) {
           <TextInput
             style={[styles.input, styles.inputMultiline]}
             placeholder="e.g. Roof repair, Roof replacement, Gutter installation"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={colors.textTertiary}
             value={manualServices}
             onChangeText={setManualServices}
             multiline
@@ -315,7 +315,7 @@ export function DemoScreen({ navigation }: Props) {
           <TextInput
             style={[styles.input, styles.inputMultiline]}
             placeholder="e.g. Same-day service, family-owned, 20 years experience"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={colors.textTertiary}
             value={manualDifferentiator}
             onChangeText={setManualDifferentiator}
             multiline
@@ -427,7 +427,7 @@ export function DemoScreen({ navigation }: Props) {
         <TextInput
           style={styles.businessInput}
           placeholder="e.g. Johnson Roofing"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={colors.textTertiary}
           value={businessName}
           onChangeText={setBusinessName}
           autoCapitalize="words"
@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: colors.textTertiary,
   },
   locationHighlight: {
     color: colors.accent,
@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.separator,
   },
   helpTitle: {
     fontSize: 14,
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.separator,
   },
   resultCardManual: {
     backgroundColor: 'transparent',
@@ -579,11 +579,11 @@ const styles = StyleSheet.create({
   },
   resultReviews: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: colors.textTertiary,
   },
   resultLocation: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: colors.textTertiary,
   },
   manualText: {
     fontSize: 15,
@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: colors.background,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.separator,
     borderRadius: borderRadius.md,
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -618,7 +618,7 @@ const styles = StyleSheet.create({
   },
   hint: {
     fontSize: 12,
-    color: colors.textMuted,
+    color: colors.textTertiary,
     marginTop: spacing.xs,
   },
   successHeader: {
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.textMuted,
+    color: colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: spacing.sm,
@@ -669,7 +669,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.sm,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.separator,
   },
   reviewStars: {
     fontSize: 14,
@@ -684,14 +684,14 @@ const styles = StyleSheet.create({
   },
   reviewAuthor: {
     fontSize: 13,
-    color: colors.textMuted,
+    color: colors.textTertiary,
   },
   groupRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.separator,
   },
   groupIcon: {
     fontSize: 16,
@@ -704,7 +704,7 @@ const styles = StyleSheet.create({
   },
   groupMembers: {
     fontSize: 13,
-    color: colors.textMuted,
+    color: colors.textTertiary,
   },
   editButton: {
     marginTop: spacing.sm,

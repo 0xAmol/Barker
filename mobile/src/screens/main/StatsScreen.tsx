@@ -1,151 +1,98 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing, borderRadius } from '../../constants/theme';
+import { colors, fontSize, spacing, borderRadius } from '../../constants/theme';
 import { MOCK_STATS } from '../../data/mockData';
-
-interface StatCardProps {
-  label: string;
-  value: string | number;
-  subvalue?: string;
-  icon: string;
-  color?: string;
-  large?: boolean;
-}
-
-function StatCard({ label, value, subvalue, icon, color = colors.accent, large }: StatCardProps) {
-  return (
-    <View style={[styles.statCard, large && styles.statCardLarge]}>
-      <View style={[styles.statIcon, { backgroundColor: `${color}20` }]}>
-        <Text style={styles.statIconText}>{icon}</Text>
-      </View>
-      <Text style={[styles.statValue, { color }]}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-      {subvalue && <Text style={styles.statSubvalue}>{subvalue}</Text>}
-    </View>
-  );
-}
-
-function formatTimeAgo(date?: Date): string {
-  if (!date) return 'Never';
-  const minutes = Math.floor((Date.now() - date.getTime()) / 60000);
-  if (minutes < 1) return 'Just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
-}
 
 export function StatsScreen() {
   const stats = MOCK_STATS;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Stats</Text>
-          <Text style={styles.headerSubtitle}>Your Barker performance</Text>
+          <Text style={styles.title}>Stats</Text>
         </View>
 
-        {/* Agent Status */}
-        <View style={styles.statusCard}>
-          <View style={styles.statusHeader}>
-            <View style={styles.statusIndicator}>
-              <View
-                style={[
+        {/* Hero Stat */}
+        <View style={styles.heroSection}>
+          <Text style={styles.heroValue}>${stats.revenueThisMonth.toLocaleString()}</Text>
+          <Text style={styles.heroLabel}>Revenue this month</Text>
+        </View>
+
+        {/* Quick Stats */}
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{stats.leadsThisMonth}</Text>
+            <Text style={styles.statLabel}>Leads</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{Math.round(stats.conversionRate * 100)}%</Text>
+            <Text style={styles.statLabel}>Won</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{stats.repliesPosted}</Text>
+            <Text style={styles.statLabel}>Replies</Text>
+          </View>
+        </View>
+
+        {/* This Week */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>This Week</Text>
+          <View style={styles.card}>
+            <View style={styles.cardRow}>
+              <Text style={styles.cardLabel}>Leads</Text>
+              <Text style={styles.cardValue}>{stats.leadsThisWeek}</Text>
+            </View>
+            <View style={styles.cardSeparator} />
+            <View style={styles.cardRow}>
+              <Text style={styles.cardLabel}>Revenue</Text>
+              <Text style={[styles.cardValue, styles.cardValueAccent]}>
+                ${stats.revenueThisWeek.toLocaleString()}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Agent */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Agent</Text>
+          <View style={styles.card}>
+            <View style={styles.cardRow}>
+              <Text style={styles.cardLabel}>Status</Text>
+              <View style={styles.statusBadge}>
+                <View style={[
                   styles.statusDot,
                   stats.agentStatus === 'active' && styles.statusDotActive,
                   stats.agentStatus === 'paused' && styles.statusDotPaused,
-                  stats.agentStatus === 'error' && styles.statusDotError,
-                ]}
-              />
-              <Text style={styles.statusLabel}>
-                {stats.agentStatus === 'active'
-                  ? 'Barker is Active'
-                  : stats.agentStatus === 'paused'
-                    ? 'Barker is Paused'
-                    : 'Barker Error'}
-              </Text>
+                ]} />
+                <Text style={styles.statusText}>
+                  {stats.agentStatus === 'active' ? 'Active' : 'Paused'}
+                </Text>
+              </View>
             </View>
-            <Text style={styles.lastRun}>Last scan: {formatTimeAgo(stats.lastRunAt)}</Text>
-          </View>
-          <View style={styles.statusStats}>
-            <View style={styles.statusStatItem}>
-              <Text style={styles.statusStatValue}>{stats.postsScanned}</Text>
-              <Text style={styles.statusStatLabel}>Posts scanned</Text>
+            <View style={styles.cardSeparator} />
+            <View style={styles.cardRow}>
+              <Text style={styles.cardLabel}>Posts scanned</Text>
+              <Text style={styles.cardValue}>{stats.postsScanned}</Text>
             </View>
-            <View style={styles.statusStatDivider} />
-            <View style={styles.statusStatItem}>
-              <Text style={styles.statusStatValue}>{stats.repliesPosted}</Text>
-              <Text style={styles.statusStatLabel}>Replies posted</Text>
-            </View>
-            <View style={styles.statusStatDivider} />
-            <View style={styles.statusStatItem}>
-              <Text style={styles.statusStatValue}>{Math.round(stats.conversionRate * 100)}%</Text>
-              <Text style={styles.statusStatLabel}>Conversion</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Main stats grid */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>This Week</Text>
-          <View style={styles.statsGrid}>
-            <StatCard
-              label="Leads"
-              value={stats.leadsThisWeek}
-              icon="🎯"
-              color="#d4a843"
-              large
-            />
-            <StatCard
-              label="Revenue"
-              value={`$${stats.revenueThisWeek.toLocaleString()}`}
-              icon="💰"
-              color="#2ECC71"
-              large
-            />
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>This Month</Text>
-          <View style={styles.statsGrid}>
-            <StatCard
-              label="Leads"
-              value={stats.leadsThisMonth}
-              icon="📊"
-              color="#3498DB"
-            />
-            <StatCard
-              label="Revenue"
-              value={`$${stats.revenueThisMonth.toLocaleString()}`}
-              icon="📈"
-              color="#2ECC71"
-            />
-          </View>
-        </View>
-
-        {/* Top source */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Top Lead Source</Text>
-          <View style={styles.topSourceCard}>
-            <Text style={styles.topSourceIcon}>🏆</Text>
-            <View style={styles.topSourceInfo}>
-              <Text style={styles.topSourceName}>{stats.topSource}</Text>
-              <Text style={styles.topSourceSubtext}>Most leads from this group</Text>
+            <View style={styles.cardSeparator} />
+            <View style={styles.cardRow}>
+              <Text style={styles.cardLabel}>Top source</Text>
+              <Text style={styles.cardValue} numberOfLines={1}>{stats.topSource}</Text>
             </View>
           </View>
         </View>
 
         {/* Credits */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Credits</Text>
-          <View style={styles.creditsCard}>
-            <View style={styles.creditsInfo}>
+          <Text style={styles.sectionLabel}>Credits</Text>
+          <View style={styles.card}>
+            <View style={styles.creditsRow}>
               <Text style={styles.creditsValue}>{stats.creditsRemaining}</Text>
-              <Text style={styles.creditsLabel}>leads remaining</Text>
+              <Text style={styles.creditsLabel}>remaining</Text>
             </View>
             <View style={styles.creditsBar}>
               <View
@@ -155,15 +102,8 @@ export function StatsScreen() {
                 ]}
               />
             </View>
-            <Text style={styles.creditsHint}>
-              {stats.creditsRemaining < 10
-                ? '⚠️ Running low! Add more credits to keep Barker running.'
-                : `At current pace, credits will last ~${Math.round(stats.creditsRemaining / (stats.leadsThisWeek / 7))} days`}
-            </Text>
           </View>
         </View>
-
-        <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -174,206 +114,148 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+  content: {
+    paddingBottom: spacing.xxl,
   },
-  headerTitle: {
-    fontSize: 24,
+  header: {
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.lg,
+  },
+  title: {
+    fontSize: fontSize.hero,
     fontWeight: '700',
     color: colors.textPrimary,
+    letterSpacing: -0.5,
   },
-  headerSubtitle: {
-    fontSize: 13,
-    color: colors.textMuted,
-    marginTop: 2,
+  heroSection: {
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.section,
+    paddingBottom: spacing.section,
   },
-  statusCard: {
-    margin: spacing.lg,
+  heroValue: {
+    fontSize: 56,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    letterSpacing: -2,
+  },
+  heroLabel: {
+    fontSize: fontSize.subhead,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    marginHorizontal: spacing.screen,
     backgroundColor: colors.backgroundCard,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.xl,
   },
-  statusHeader: {
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: fontSize.title,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  statLabel: {
+    fontSize: fontSize.footnote,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
+  statDivider: {
+    width: StyleSheet.hairlineWidth,
+    backgroundColor: colors.separator,
+  },
+  section: {
+    marginTop: spacing.section,
+    paddingHorizontal: spacing.screen,
+  },
+  sectionLabel: {
+    fontSize: fontSize.footnote,
+    fontWeight: '500',
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.md,
+  },
+  card: {
+    backgroundColor: colors.backgroundCard,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.lg,
+  },
+  cardRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.md,
+    paddingVertical: 16,
   },
-  statusIndicator: {
+  cardSeparator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.separator,
+  },
+  cardLabel: {
+    fontSize: fontSize.body,
+    color: colors.textPrimary,
+  },
+  cardValue: {
+    fontSize: fontSize.body,
+    color: colors.textSecondary,
+    maxWidth: '50%',
+    textAlign: 'right',
+  },
+  cardValueAccent: {
+    color: colors.accent,
+    fontWeight: '600',
+  },
+  statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
   statusDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: spacing.sm,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.textTertiary,
   },
   statusDotActive: {
-    backgroundColor: '#2ECC71',
+    backgroundColor: colors.success,
   },
   statusDotPaused: {
-    backgroundColor: '#F39C12',
+    backgroundColor: colors.warning,
   },
-  statusDotError: {
-    backgroundColor: '#E74C3C',
+  statusText: {
+    fontSize: fontSize.body,
+    color: colors.textSecondary,
   },
-  statusLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  lastRun: {
-    fontSize: 12,
-    color: colors.textMuted,
-  },
-  statusStats: {
-    flexDirection: 'row',
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: spacing.md,
-  },
-  statusStatItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statusStatValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.textPrimary,
-  },
-  statusStatLabel: {
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  statusStatDivider: {
-    width: 1,
-    backgroundColor: colors.border,
-  },
-  section: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: spacing.sm,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: colors.backgroundCard,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-  },
-  statCardLarge: {
-    paddingVertical: spacing.lg,
-  },
-  statIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
-  },
-  statIconText: {
-    fontSize: 20,
-  },
-  statValue: {
-    fontSize: 28,
-    fontWeight: '700',
-  },
-  statLabel: {
-    fontSize: 13,
-    color: colors.textMuted,
-    marginTop: 4,
-  },
-  statSubvalue: {
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  topSourceCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.backgroundCard,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  topSourceIcon: {
-    fontSize: 32,
-    marginRight: spacing.md,
-  },
-  topSourceInfo: {
-    flex: 1,
-  },
-  topSourceName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  topSourceSubtext: {
-    fontSize: 13,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  creditsCard: {
-    backgroundColor: colors.backgroundCard,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  creditsInfo: {
+  creditsRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginBottom: spacing.sm,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
   },
   creditsValue: {
-    fontSize: 32,
+    fontSize: 40,
     fontWeight: '700',
-    color: colors.accent,
+    color: colors.textPrimary,
   },
   creditsLabel: {
-    fontSize: 15,
+    fontSize: fontSize.body,
     color: colors.textSecondary,
     marginLeft: spacing.sm,
   },
   creditsBar: {
-    height: 8,
-    backgroundColor: colors.border,
-    borderRadius: 4,
+    height: 4,
+    backgroundColor: colors.separator,
+    borderRadius: 2,
+    marginBottom: spacing.lg,
     overflow: 'hidden',
-    marginBottom: spacing.sm,
   },
   creditsBarFill: {
     height: '100%',
     backgroundColor: colors.accent,
-    borderRadius: 4,
-  },
-  creditsHint: {
-    fontSize: 12,
-    color: colors.textMuted,
-  },
-  bottomPadding: {
-    height: spacing.xxl,
+    borderRadius: 2,
   },
 });

@@ -4,140 +4,66 @@ import {
   Text,
   StyleSheet,
   FlatList,
-  TouchableOpacity,
   Animated,
-  LayoutAnimation,
-  Platform,
-  UIManager,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing, borderRadius } from '../../constants/theme';
-import { ActivityEvent, ACTIVITY_ICONS, ACTIVITY_COLORS } from '../../types/activity';
+import { colors, fontSize, spacing } from '../../constants/theme';
+import { ActivityEvent } from '../../types/activity';
 import { generateMockActivities, generateNewActivity } from '../../data/mockData';
-
-// Enable LayoutAnimation on Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 function formatTimeAgo(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-
   if (seconds < 5) return 'now';
-  if (seconds < 60) return `${seconds}s ago`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  return `${Math.floor(seconds / 86400)}d ago`;
+  if (seconds < 60) return `${seconds}s`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+  return `${Math.floor(seconds / 86400)}d`;
 }
+
+const EVENT_ICONS: Record<string, string> = {
+  group_scanned: '◎',
+  demand_found: '◆',
+  post_analyzed: '◇',
+  reply_drafted: '✎',
+  reply_posted: '↗',
+  lead_captured: '●',
+  sms_sent: '✉',
+  agent_started: '▶',
+  agent_paused: '❚❚',
+  error: '!',
+};
 
 interface ActivityItemProps {
   event: ActivityEvent;
   isNew?: boolean;
+  isLast?: boolean;
 }
 
-function ActivityItem({ event, isNew }: ActivityItemProps) {
-  const [expanded, setExpanded] = useState(false);
-  const slideAnim = useRef(new Animated.Value(isNew ? -100 : 0)).current;
+function ActivityItem({ event, isNew, isLast }: ActivityItemProps) {
   const fadeAnim = useRef(new Animated.Value(isNew ? 0 : 1)).current;
 
   useEffect(() => {
     if (isNew) {
-      Animated.parallel([
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          tension: 50,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
     }
-  }, [isNew, slideAnim, fadeAnim]);
+  }, [isNew, fadeAnim]);
 
-  const handlePress = () => {
-    if (event.expandable && event.details) {
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setExpanded(!expanded);
-    }
-  };
-
-  const icon = ACTIVITY_ICONS[event.type];
-  const accentColor = ACTIVITY_COLORS[event.type];
+  const icon = EVENT_ICONS[event.type] || '•';
   const timeAgo = formatTimeAgo(event.timestamp);
-  const isRecent = timeAgo === 'now' || timeAgo.includes('s ago');
+  const isHighlight = event.type === 'lead_captured' || event.type === 'sms_sent';
 
   return (
-    <Animated.View
-      style={[
-        styles.itemContainer,
-        {
-          transform: [{ translateY: slideAnim }],
-          opacity: fadeAnim,
-        },
-      ]}
-    >
-      <TouchableOpacity
-        style={styles.item}
-        onPress={handlePress}
-        activeOpacity={event.expandable ? 0.7 : 1}
-      >
-        {/* Timeline line */}
-        <View style={styles.timeline}>
-          <View style={[styles.dot, { backgroundColor: accentColor }]} />
-          <View style={styles.line} />
-        </View>
-
-        {/* Content */}
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <View style={styles.iconContainer}>
-              <Text style={styles.icon}>{icon}</Text>
-            </View>
-            <View style={styles.headerText}>
-              <Text style={styles.title}>{event.title}</Text>
-              {event.subtitle && (
-                <Text style={styles.subtitle} numberOfLines={expanded ? undefined : 2}>
-                  {event.subtitle}
-                </Text>
-              )}
-            </View>
-            <View style={styles.timeContainer}>
-              <Text style={[styles.time, isRecent && styles.timeRecent]}>
-                {timeAgo}
-              </Text>
-              {isRecent && <View style={[styles.liveDot, { backgroundColor: accentColor }]} />}
-            </View>
-          </View>
-
-          {/* Expanded details */}
-          {expanded && event.details && (
-            <View style={styles.details}>
-              {Object.entries(event.details).map(([key, value]) => (
-                <View key={key} style={styles.detailRow}>
-                  <Text style={styles.detailKey}>
-                    {key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
-                  </Text>
-                  <Text style={styles.detailValue}>
-                    {typeof value === 'number' && key.includes('relevance')
-                      ? `${Math.round(value * 100)}%`
-                      : String(value)}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {event.expandable && (
-            <Text style={styles.expandHint}>
-              {expanded ? '↑ Collapse' : '↓ Tap for details'}
-            </Text>
-          )}
-        </View>
-      </TouchableOpacity>
+    <Animated.View style={[styles.item, { opacity: fadeAnim }]}>
+      <Text style={[styles.icon, isHighlight && styles.iconHighlight]}>{icon}</Text>
+      <Text style={styles.text} numberOfLines={1}>
+        {event.title}
+      </Text>
+      <Text style={styles.time}>{timeAgo}</Text>
+      {!isLast && <View style={styles.separator} />}
     </Animated.View>
   );
 }
@@ -147,25 +73,17 @@ export function ActivityFeedScreen() {
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
   const flatListRef = useRef<FlatList>(null);
 
-  // Load initial activities
   useEffect(() => {
     setActivities(generateMockActivities());
   }, []);
 
-  // Simulate live feed updates
   useEffect(() => {
     const interval = setInterval(() => {
       const newActivity = generateNewActivity();
-
       setNewIds((prev) => new Set([...prev, newActivity.id]));
-
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setActivities((prev) => [newActivity, ...prev]);
-
-      // Scroll to top
       flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
 
-      // Clear "new" status after animation
       setTimeout(() => {
         setNewIds((prev) => {
           const next = new Set(prev);
@@ -173,34 +91,31 @@ export function ActivityFeedScreen() {
           return next;
         });
       }, 1000);
-    }, 8000); // New event every 8 seconds
+    }, 8000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const renderItem = ({ item }: { item: ActivityEvent }) => (
-    <ActivityItem event={item} isNew={newIds.has(item.id)} />
-  );
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.headerBar}>
-        <View>
-          <Text style={styles.headerTitle}>Barker Activity</Text>
-          <Text style={styles.headerSubtitle}>Live feed of your agent working</Text>
-        </View>
+      <View style={styles.header}>
+        <Text style={styles.title}>Activity</Text>
         <View style={styles.statusBadge}>
           <View style={styles.statusDot} />
-          <Text style={styles.statusText}>Active</Text>
+          <Text style={styles.statusText}>Live</Text>
         </View>
       </View>
 
-      {/* Activity Feed */}
       <FlatList
         ref={flatListRef}
         data={activities}
-        renderItem={renderItem}
+        renderItem={({ item, index }) => (
+          <ActivityItem
+            event={item}
+            isNew={newIds.has(item.id)}
+            isLast={index === activities.length - 1}
+          />
+        )}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
@@ -214,151 +129,67 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  headerBar: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
   },
-  headerTitle: {
-    fontSize: 24,
+  title: {
+    fontSize: fontSize.hero,
     fontWeight: '700',
     color: colors.textPrimary,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    color: colors.textMuted,
-    marginTop: 2,
+    letterSpacing: -0.5,
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(46, 204, 113, 0.15)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: borderRadius.full,
+    gap: 6,
   },
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#2ECC71',
-    marginRight: 6,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#2ECC71',
-  },
-  list: {
-    paddingVertical: spacing.md,
-  },
-  itemContainer: {
-    paddingHorizontal: spacing.lg,
-  },
-  item: {
-    flexDirection: 'row',
-    paddingVertical: spacing.sm,
-  },
-  timeline: {
-    width: 24,
-    alignItems: 'center',
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginTop: 6,
-  },
-  line: {
-    flex: 1,
-    width: 2,
-    backgroundColor: colors.border,
-    marginTop: 4,
-  },
-  content: {
-    flex: 1,
-    marginLeft: spacing.sm,
-    paddingBottom: spacing.md,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: colors.backgroundCard,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.sm,
-  },
-  icon: {
-    fontSize: 16,
-  },
-  headerText: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    lineHeight: 20,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginTop: 2,
-    lineHeight: 18,
-  },
-  timeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: spacing.sm,
-  },
-  time: {
-    fontSize: 11,
-    color: colors.textMuted,
-  },
-  timeRecent: {
-    color: colors.accent,
-    fontWeight: '600',
-  },
-  liveDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    marginLeft: 4,
+    backgroundColor: colors.success,
   },
-  details: {
-    marginTop: spacing.sm,
-    backgroundColor: colors.backgroundCard,
-    borderRadius: borderRadius.sm,
-    padding: spacing.sm,
+  statusText: {
+    fontSize: fontSize.footnote,
+    color: colors.textSecondary,
   },
-  detailRow: {
+  list: {
+    paddingHorizontal: spacing.screen,
+  },
+  item: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
+    alignItems: 'center',
+    paddingVertical: 14,
   },
-  detailKey: {
-    fontSize: 12,
-    color: colors.textMuted,
+  icon: {
+    fontSize: 14,
+    color: colors.textTertiary,
+    width: 24,
   },
-  detailValue: {
-    fontSize: 12,
+  iconHighlight: {
+    color: colors.accent,
+  },
+  text: {
+    flex: 1,
+    fontSize: fontSize.subhead,
     color: colors.textPrimary,
-    fontWeight: '500',
-    maxWidth: '60%',
-    textAlign: 'right',
   },
-  expandHint: {
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: spacing.xs,
+  time: {
+    fontSize: fontSize.footnote,
+    color: colors.textTertiary,
+    marginLeft: spacing.md,
+  },
+  separator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 24,
+    right: 0,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.separator,
   },
 });

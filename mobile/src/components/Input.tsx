@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, TextInput, Text, StyleSheet, TextInputProps } from 'react-native';
-import { colors, borderRadius, spacing } from '../constants/theme';
+import { colors, fontSize, borderRadius, spacing } from '../constants/theme';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -14,7 +14,7 @@ export function Input({ label, helperText, error, style, ...props }: InputProps)
       {label && <Text style={styles.label}>{label}</Text>}
       <TextInput
         style={[styles.input, error && styles.inputError, style]}
-        placeholderTextColor={colors.textMuted}
+        placeholderTextColor={colors.textTertiary}
         {...props}
       />
       {helperText && !error && <Text style={styles.helperText}>{helperText}</Text>}
@@ -25,37 +25,36 @@ export function Input({ label, helperText, error, style, ...props }: InputProps)
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
   },
   label: {
-    fontSize: 12,
+    fontSize: fontSize.footnote,
     fontWeight: '500',
     color: colors.textSecondary,
-    marginBottom: 6,
+    marginBottom: spacing.sm,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   input: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.md,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    fontSize: 16,
+    paddingVertical: 16,
+    paddingHorizontal: spacing.lg,
+    fontSize: fontSize.body,
     color: colors.textPrimary,
   },
   inputError: {
+    borderWidth: 1,
     borderColor: colors.error,
   },
   helperText: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: 6,
+    fontSize: fontSize.footnote,
+    color: colors.textTertiary,
+    marginTop: spacing.sm,
   },
   errorText: {
-    fontSize: 12,
+    fontSize: fontSize.footnote,
     color: colors.error,
-    marginTop: 6,
+    marginTop: spacing.sm,
   },
 });
