@@ -22,7 +22,7 @@ export function ScreenWrapper({
   children,
   step,
   showProgress = true,
-  scrollable = true,
+  scrollable = false,
   footer,
 }: ScreenWrapperProps) {
   const content = scrollable ? (
@@ -40,11 +40,11 @@ export function ScreenWrapper({
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {showProgress && <ProgressBar currentStep={step} />}
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {showProgress && <ProgressBar currentStep={step} />}
         {content}
         {footer && (
           <SafeAreaView edges={['bottom']} style={styles.footer}>
@@ -69,15 +69,17 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: spacing.screen,
+    paddingTop: spacing.lg,
     paddingBottom: spacing.xxl,
   },
   content: {
     flex: 1,
     paddingHorizontal: spacing.screen,
+    paddingTop: spacing.lg,
   },
   footer: {
     paddingHorizontal: spacing.screen,
-    paddingTop: spacing.lg,
+    paddingTop: spacing.md,
     paddingBottom: spacing.md,
     backgroundColor: colors.background,
   },

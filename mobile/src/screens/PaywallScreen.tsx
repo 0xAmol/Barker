@@ -150,7 +150,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.textPrimary,
     marginBottom: spacing.sm,
-    marginTop: spacing.md,
   },
   subheadline: {
     fontSize: 16,
@@ -162,8 +161,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.separator,
     marginBottom: spacing.lg,
   },
   featuresTitle: {
@@ -218,8 +215,6 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.sm,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: colors.separator,
     flexDirection: 'row',
     alignItems: 'center',
   },

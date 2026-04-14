@@ -462,7 +462,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.textPrimary,
     marginBottom: spacing.sm,
-    marginTop: spacing.md,
   },
   subheadline: {
     fontSize: 16,
@@ -505,8 +504,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.md,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.separator,
   },
   helpTitle: {
     fontSize: 14,
@@ -543,8 +540,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.separator,
   },
   resultCardManual: {
     backgroundColor: 'transparent',
@@ -603,9 +598,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   input: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.separator,
+    backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.md,
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -625,7 +618,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: spacing.lg,
-    marginTop: spacing.md,
   },
   successIcon: {
     fontSize: 24,
@@ -668,8 +660,6 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.separator,
   },
   reviewStars: {
     fontSize: 14,

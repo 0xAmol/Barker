@@ -105,7 +105,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.textPrimary,
     marginBottom: spacing.lg,
-    marginTop: spacing.md,
   },
   solutions: {
     gap: spacing.md,
@@ -115,8 +114,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.separator,
     marginBottom: spacing.md,
   },
   iconContainer: {

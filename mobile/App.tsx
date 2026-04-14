@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { OnboardingProvider } from './src/context/OnboardingContext';
+import { AppContainer } from './src/components';
 import { colors } from './src/constants/theme';
 
 import {
@@ -82,11 +83,12 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <OnboardingProvider>
-        <NavigationContainer theme={BarkerTheme}>
-          <StatusBar style="light" />
-          <Stack.Navigator
+    <AppContainer>
+      <SafeAreaProvider>
+        <OnboardingProvider>
+          <NavigationContainer theme={BarkerTheme}>
+            <StatusBar style="light" />
+            <Stack.Navigator
             initialRouteName={hasCompletedOnboarding ? 'MainApp' : 'Welcome'}
             screenOptions={{
               headerShown: false,
@@ -121,9 +123,10 @@ export default function App() {
                 gestureEnabled: false, // Prevent swipe back to onboarding
               }}
             />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </OnboardingProvider>
-    </SafeAreaProvider>
+            </Stack.Navigator>
+          </NavigationContainer>
+        </OnboardingProvider>
+      </SafeAreaProvider>
+    </AppContainer>
   );
 }

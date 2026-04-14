@@ -116,7 +116,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.textPrimary,
     marginBottom: spacing.sm,
-    marginTop: spacing.md,
   },
   subheadline: {
     fontSize: 16,
@@ -128,9 +127,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   input: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.separator,
+    backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.md,
     paddingVertical: 14,
     paddingHorizontal: 16,

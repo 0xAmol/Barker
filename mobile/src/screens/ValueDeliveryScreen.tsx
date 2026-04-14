@@ -124,7 +124,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.textPrimary,
     marginBottom: spacing.lg,
-    marginTop: spacing.md,
   },
   section: {
     marginBottom: spacing.lg,
@@ -141,8 +140,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.lg,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.separator,
   },
   browserBar: {
     flexDirection: 'row',
@@ -220,8 +217,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.md,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.separator,
   },
   statRow: {
     flexDirection: 'row',
@@ -255,8 +250,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.md,
     padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.separator,
   },
   replyLabel: {
     fontSize: 12,
