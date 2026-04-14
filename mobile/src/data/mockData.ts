@@ -43,7 +43,7 @@ export const generateMockActivities = (): ActivityEvent[] => {
       subtitle: 'Katy TX Homeowners',
       details: {
         group: 'Katy TX Homeowners',
-        reply: "Hey! Johnson Plumbing does great work in Katy — they've helped a few folks in this group. Same-day service and fair prices. Here's their quote page: barker.app/q/johnson-plumbing",
+        reply: "Hey! I'm Dave with Johnson Plumbing — kitchen sink leaks are our bread and butter. We're in Katy and can usually get out same day. Happy to take a look, free estimate: barker.app/q/johnson-plumbing",
       },
       expandable: true,
     },
@@ -51,8 +51,8 @@ export const generateMockActivities = (): ActivityEvent[] => {
       id: '4',
       type: 'reply_drafted',
       timestamp: new Date(now.getTime() - 32000),
-      title: 'Reply drafted in your brand voice',
-      subtitle: 'Friendly, mentions same-day service',
+      title: 'Reply drafted for you to post',
+      subtitle: '"Hey! I\'m Dave with Johnson Plumbing..."',
       expandable: false,
     },
     {

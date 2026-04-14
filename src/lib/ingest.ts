@@ -85,19 +85,35 @@ async function fetchFromPlacesAPI(
 async function scrapeGoogleBusiness(
   url: string
 ): Promise<BusinessProfile> {
+  // Extract business name from URL path as primary method
+  // URL format: https://www.google.com/maps/place/Business+Name+Here/...
+  const nameFromUrl = extractNameFromUrl(url);
+
   // Minimal fallback scraper for when we don't have a Places API key
   // In reality, Google blocks scraping, so this is for demo/dev only
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-    },
-  });
-  const html = await res.text();
-  const $ = cheerio.load(html);
+  let scrapedName = "Unknown Business";
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      },
+    });
+    const html = await res.text();
+    const $ = cheerio.load(html);
+    const ogTitle = $('meta[property="og:title"]').attr("content");
+    if (ogTitle && !ogTitle.includes("Google Maps")) {
+      scrapedName = ogTitle;
+    }
+  } catch (e) {
+    console.warn("Scraping failed:", e);
+  }
+
+  // Prefer URL-extracted name over scraped name (which is often just "Google Maps")
+  const businessName = nameFromUrl || scrapedName;
 
   return {
-    name: $('meta[property="og:title"]').attr("content") || "Unknown Business",
+    name: businessName,
     category: undefined,
     address: undefined,
     phone: undefined,
@@ -110,6 +126,17 @@ async function scrapeGoogleBusiness(
     photos: [],
     service_area: [],
   };
+}
+
+function extractNameFromUrl(url: string): string | null {
+  // Extract business name from Google Maps URL
+  // Format: https://www.google.com/maps/place/Business+Name+Here/@lat,lng,...
+  const match = url.match(/\/place\/([^/@]+)/);
+  if (match) {
+    // Decode URL encoding and replace + with spaces
+    return decodeURIComponent(match[1].replace(/\+/g, " "));
+  }
+  return null;
 }
 
 function inferServicesFromReviews(

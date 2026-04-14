@@ -4,6 +4,21 @@ import type { Agent, BusinessProfile, BrandVoice, DemandSignal } from "@/types";
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = "claude-sonnet-4-20250514";
 
+// Helper to parse JSON from Claude's response (handles markdown code blocks)
+function parseJSON<T>(text: string): T {
+  // Strip markdown code blocks if present
+  let cleaned = text.trim();
+  if (cleaned.startsWith("```json")) {
+    cleaned = cleaned.slice(7);
+  } else if (cleaned.startsWith("```")) {
+    cleaned = cleaned.slice(3);
+  }
+  if (cleaned.endsWith("```")) {
+    cleaned = cleaned.slice(0, -3);
+  }
+  return JSON.parse(cleaned.trim());
+}
+
 // ============================================
 // BUSINESS INGESTION
 // Takes a scraped Google Business profile and
@@ -53,7 +68,7 @@ ${profile.reviews
   });
 
   const text = msg.content[0].type === "text" ? msg.content[0].text : "";
-  return JSON.parse(text);
+  return parseJSON(text);
 }
 
 // ============================================
@@ -74,10 +89,20 @@ export async function generateContent(
       "Caption style. Use line breaks for readability. 3-5 relevant hashtags. Lifestyle angle when possible.",
   };
 
+  const replyInstructions = contentType === "reply" ? `
+IMPORTANT: You are writing a reply AS THE BUSINESS OWNER responding directly to someone who needs their service.
+- Introduce yourself by name and business (e.g., "Hey! I'm Dave with ${agent.business_name}")
+- Show you understand their specific problem
+- Offer to help directly
+- Keep it short — 2-3 sentences max
+- NEVER pretend to be a customer or write fake referrals
+- NEVER say things like "my neighbor used..." or "I heard good things about..."
+- The quote page link will be appended automatically` : "";
+
   const msg = await anthropic.messages.create({
     model: MODEL,
     max_tokens: 500,
-    system: `You are Barker, an AI posting on behalf of "${agent.business_name}".
+    system: `You are Barker, an AI drafting content for "${agent.business_name}" to post.
 
 Brand voice: ${agent.brand_voice.tone || "professional and friendly"}
 Personality: ${agent.brand_voice.personality || "helpful local business"}
@@ -88,13 +113,14 @@ What customers love: ${agent.reviews_summary || "quality service"}
 Platform: ${platform}
 Guidelines: ${platformGuidance[platform]}
 
-${contentType === "reply" && context?.reply_to_text ? `You are replying to this post: "${context.reply_to_text}"` : ""}
+${contentType === "reply" && context?.reply_to_text ? `Replying to: "${context.reply_to_text}"` : ""}
+${replyInstructions}
 
 Return JSON only: { "body": "the post text", "hashtags": ["relevant", "hashtags"] }
 
 RULES:
 - Never sound like a bot or generic AI
-- Write like a real person who runs this business
+- Write as the business owner speaking directly
 - Reference specific services and area when natural
 - Don't oversell — be genuinely helpful
 - The referral link will be appended automatically, don't include URLs`,
@@ -103,14 +129,14 @@ RULES:
         role: "user",
         content:
           contentType === "reply"
-            ? `Write a helpful reply to this post. Be genuine, not salesy. If it's relevant, mention we can help.`
+            ? `Write a reply as the business owner. Introduce yourself, acknowledge their problem, and offer to help. Be direct and professional, not salesy.`
             : `Write a ${platform} post that would attract potential customers. Mix it up — could be a tip, a before/after story, a seasonal reminder, or a customer success story.`,
       },
     ],
   });
 
   const text = msg.content[0].type === "text" ? msg.content[0].text : "";
-  return JSON.parse(text);
+  return parseJSON(text);
 }
 
 // ============================================
@@ -135,6 +161,7 @@ export async function analyzeDemandSignal(
     system: `You analyze social media posts to find people who need "${agent.business_name}" services.
 Services: ${agent.services.join(", ")}
 Area: ${agent.service_area.join(", ")}
+Owner name: ${agent.owner_name || "the owner"}
 
 Return JSON only:
 {
@@ -143,14 +170,21 @@ Return JSON only:
   "intent": "seeking_service|asking_recommendation|complaining|general_discussion",
   "location_hint": "extracted city/neighborhood or null",
   "should_engage": true/false,
-  "suggested_reply": "a natural, helpful reply or null if we shouldn't engage"
+  "suggested_reply": "a reply AS THE BUSINESS OWNER or null if we shouldn't engage"
 }
+
+Rules for suggested_reply:
+- Write as the business owner speaking directly (e.g., "Hey! I'm ${agent.owner_name || "the owner"} with ${agent.business_name}...")
+- NEVER pretend to be a customer or write fake referrals
+- NEVER say "my neighbor used..." or "I heard good things about..."
+- Keep it 2-3 sentences: introduce yourself, acknowledge the problem, offer to help
+- The quote page link will be appended automatically
 
 Rules for engagement:
 - Only engage if genuinely relevant (score > 0.6)
 - Never engage if the post is about a different service area
 - Replies should be helpful first, promotional second
-- If someone is asking for recommendations, it's okay to mention the business
+- If someone is asking for recommendations, introduce yourself as the business owner
 - If someone is just complaining, only engage if we can genuinely help
 - Don't reply to other businesses' posts`,
     messages: [
@@ -162,7 +196,7 @@ Rules for engagement:
   });
 
   const text = msg.content[0].type === "text" ? msg.content[0].text : "";
-  return JSON.parse(text);
+  return parseJSON(text);
 }
 
 // ============================================
@@ -198,5 +232,5 @@ What customers love: ${agent.reviews_summary}`,
   });
 
   const text = msg.content[0].type === "text" ? msg.content[0].text : "";
-  return JSON.parse(text);
+  return parseJSON(text);
 }
