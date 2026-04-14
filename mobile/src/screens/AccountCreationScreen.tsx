@@ -148,19 +148,19 @@ const styles = StyleSheet.create({
   subheadline: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     lineHeight: 22,
   },
   form: {
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
   },
   privacyNote: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.backgroundCard,
     borderRadius: 8,
-    padding: spacing.md,
-    marginTop: spacing.md,
+    padding: spacing.sm,
+    marginTop: spacing.sm,
   },
   privacyIcon: {
     fontSize: 18,

@@ -154,14 +154,14 @@ const styles = StyleSheet.create({
   subheadline: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     lineHeight: 22,
   },
   featuresCard: {
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   featuresTitle: {
     fontSize: 14,
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   featureRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   featureIcon: {
     fontSize: 14,
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   pricingSection: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   pricingTitle: {
     fontSize: 14,

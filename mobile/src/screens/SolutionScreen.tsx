@@ -107,14 +107,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   solutions: {
-    gap: spacing.md,
+    gap: 10,
   },
   solutionItem: {
     flexDirection: 'row',
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    marginBottom: spacing.md,
+    marginBottom: 10,
   },
   iconContainer: {
     width: 44,

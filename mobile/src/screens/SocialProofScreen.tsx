@@ -87,10 +87,6 @@ export function SocialProofScreen({ navigation }: Props) {
           <TestimonialCard key={index} testimonial={testimonial} />
         ))}
       </View>
-
-      <Text style={styles.placeholder}>
-        * Placeholder testimonials — replace with real reviews
-      </Text>
     </ScreenWrapper>
   );
 }
@@ -109,13 +105,13 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   testimonials: {
-    gap: spacing.md,
+    gap: 10,
   },
   card: {
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
-    marginBottom: spacing.md,
+    marginBottom: 10,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -157,13 +153,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.textSecondary,
     lineHeight: 22,
-    fontStyle: 'italic',
-  },
-  placeholder: {
-    fontSize: 12,
-    color: colors.textTertiary,
-    textAlign: 'center',
-    marginTop: spacing.md,
     fontStyle: 'italic',
   },
 });

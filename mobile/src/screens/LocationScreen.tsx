@@ -120,11 +120,11 @@ const styles = StyleSheet.create({
   subheadline: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     lineHeight: 22,
   },
   inputContainer: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   input: {
     backgroundColor: colors.backgroundCard,
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   suggestions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   selectedLocations: {
     flexDirection: 'row',

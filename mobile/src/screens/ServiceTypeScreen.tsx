@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ScreenWrapper, Button, SelectableOption } from '../components';
 import { useOnboarding } from '../context/OnboardingContext';
@@ -39,15 +39,17 @@ export function ServiceTypeScreen({ navigation }: Props) {
         Pick your trade so Barker knows what to look for.
       </Text>
 
-      <View style={styles.options}>
+      <View style={styles.grid}>
         {SERVICE_OPTIONS.map((option) => (
-          <SelectableOption
-            key={option.id}
-            label={option.label}
-            emoji={option.emoji}
-            selected={state.serviceType === option.id}
-            onPress={() => handleSelect(option.id)}
-          />
+          <View key={option.id} style={styles.gridItem}>
+            <SelectableOption
+              label={option.label}
+              emoji={option.emoji}
+              selected={state.serviceType === option.id}
+              onPress={() => handleSelect(option.id)}
+              compact
+            />
+          </View>
         ))}
       </View>
     </ScreenWrapper>
@@ -64,10 +66,17 @@ const styles = StyleSheet.create({
   subheadline: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     lineHeight: 22,
   },
-  options: {
-    marginTop: spacing.sm,
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: -4,
+  },
+  gridItem: {
+    width: '50%',
+    paddingHorizontal: 4,
+    marginBottom: 8,
   },
 });

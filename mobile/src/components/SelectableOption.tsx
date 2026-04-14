@@ -8,6 +8,7 @@ interface SelectableOptionProps {
   selected: boolean;
   onPress: () => void;
   multiSelect?: boolean;
+  compact?: boolean;
 }
 
 export function SelectableOption({
@@ -16,7 +17,21 @@ export function SelectableOption({
   selected,
   onPress,
   multiSelect = false,
+  compact = false,
 }: SelectableOptionProps) {
+  if (compact) {
+    return (
+      <TouchableOpacity
+        style={[styles.compactContainer, selected && styles.compactSelected]}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
+        {emoji && <Text style={styles.compactEmoji}>{emoji}</Text>}
+        <Text style={[styles.compactLabel, selected && styles.labelSelected]}>{label}</Text>
+      </TouchableOpacity>
+    );
+  }
+
   return (
     <TouchableOpacity
       style={[styles.container, selected && styles.selected]}
@@ -39,22 +54,22 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: spacing.lg,
+    paddingVertical: 12,
+    paddingHorizontal: spacing.md,
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.md,
-    marginBottom: spacing.md,
+    marginBottom: 8,
   },
   selected: {
     backgroundColor: colors.accentDim,
   },
   checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
+    width: 18,
+    height: 18,
+    borderRadius: 4,
     borderWidth: 2,
     borderColor: colors.separator,
-    marginRight: spacing.md,
+    marginRight: spacing.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -64,24 +79,43 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     color: colors.background,
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '700',
   },
   emoji: {
-    fontSize: 22,
-    marginRight: spacing.md,
+    fontSize: 18,
+    marginRight: spacing.sm,
   },
   label: {
     flex: 1,
-    fontSize: fontSize.body,
+    fontSize: 15,
     color: colors.textPrimary,
   },
   labelSelected: {
     color: colors.accent,
   },
   selectedIndicator: {
-    fontSize: fontSize.body,
+    fontSize: 14,
     color: colors.accent,
     fontWeight: '600',
+  },
+  compactContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 48,
+    paddingHorizontal: 12,
+    backgroundColor: colors.backgroundCard,
+    borderRadius: borderRadius.md,
+  },
+  compactSelected: {
+    backgroundColor: colors.accentDim,
+  },
+  compactEmoji: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  compactLabel: {
+    fontSize: 13,
+    color: colors.textPrimary,
   },
 });

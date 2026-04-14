@@ -73,13 +73,12 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
   },
   content: {
-    flex: 1,
     paddingHorizontal: spacing.screen,
     paddingTop: spacing.lg,
   },
   footer: {
     paddingHorizontal: spacing.screen,
-    paddingTop: spacing.md,
+    paddingTop: 32,
     paddingBottom: spacing.md,
     backgroundColor: colors.background,
   },

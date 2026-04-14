@@ -91,7 +91,7 @@ const generateMockAnalysis = (result: SearchResult, serviceType: string | null):
   ],
   quotePageUrl: `barker.app/q/${result.name.toLowerCase().replace(/\s+/g, '-')}`,
   sampleReply:
-    `Hey! I'd recommend ${result.name} — they've done work for a few folks in this group. Quality work and they don't cut corners. Here's their quote page if you want a quick estimate: [link]`,
+    `Hey! I'm Dave with ${result.name} — we do a lot of work in this area. Happy to come out for a free estimate. Here's our page: [link]`,
 });
 
 type Stage = 'input' | 'searching' | 'results' | 'manual' | 'analyzing' | 'analysis';
@@ -172,7 +172,7 @@ export function DemoScreen({ navigation }: Props) {
         { name: 'Local Recommendations', members: '32K' },
       ],
       quotePageUrl: `barker.app/q/${manualName.toLowerCase().replace(/\s+/g, '-')}`,
-      sampleReply: `Hey! Check out ${manualName} — they do great work in the area. Here's their quote page: [link]`,
+      sampleReply: `Hey! I'm Dave with ${manualName} — we do a lot of work in the area. Happy to come out for a free estimate. Here's our page: [link]`,
     };
 
     setAnalysis(analysisResult);
@@ -442,16 +442,6 @@ export function DemoScreen({ navigation }: Props) {
           Searching in <Text style={styles.locationHighlight}>{userCity}</Text>
         </Text>
       </View>
-
-      <View style={styles.helpBox}>
-        <Text style={styles.helpTitle}>What we'll find:</Text>
-        <Text style={styles.helpText}>
-          • Your services and specialties{'\n'}
-          • Customer reviews and testimonials{'\n'}
-          • Your brand voice and tone{'\n'}
-          • Local Facebook groups to monitor
-        </Text>
-      </View>
     </ScreenWrapper>
   );
 }
@@ -466,7 +456,7 @@ const styles = StyleSheet.create({
   subheadline: {
     fontSize: 16,
     color: colors.textSecondary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
     lineHeight: 22,
   },
   inputContainer: {
@@ -500,22 +490,6 @@ const styles = StyleSheet.create({
     color: colors.accent,
     fontWeight: '600',
   },
-  helpBox: {
-    backgroundColor: colors.backgroundCard,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-  },
-  helpTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: spacing.sm,
-  },
-  helpText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 24,
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -534,7 +508,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   resultsList: {
-    gap: spacing.md,
+    gap: 10,
   },
   resultCard: {
     backgroundColor: colors.backgroundCard,
@@ -589,7 +563,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   formGroup: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   label: {
     fontSize: 14,
@@ -630,7 +604,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   section: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   sectionTitle: {
     fontSize: 12,

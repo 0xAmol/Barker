@@ -110,7 +110,7 @@ export function ValueDeliveryScreen({ navigation }: Props) {
           <Text style={styles.replyLabel}>Barker will reply:</Text>
           <Text style={styles.replyText}>
             {analysis?.sampleReply ||
-              "Hey! I'd recommend this business — they've done work for a few folks in this group. Same-day service and fair pricing. Here's their quote page if you want a quick estimate: [link]"}
+              "Hey! I'm Dave with Pro Roofing — hail damage is what we do. We can usually get out same day for a free estimate. Here's our page: [link]"}
           </Text>
         </View>
       </View>
@@ -123,10 +123,10 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: '700',
     color: colors.textPrimary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   section: {
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   sectionTitle: {
     fontSize: 12,

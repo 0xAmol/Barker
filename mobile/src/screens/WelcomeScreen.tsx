@@ -82,7 +82,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   content: {
-    flex: 1,
     paddingHorizontal: spacing.screen,
     paddingTop: spacing.xl,
   },
@@ -184,6 +183,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: spacing.screen,
+    paddingTop: 32,
     paddingBottom: spacing.lg,
   },
   footerSubtitle: {
