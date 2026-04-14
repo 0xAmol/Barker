@@ -38,6 +38,27 @@ export interface Lead {
   notes?: string;
 }
 
+export interface DemandAlert {
+  id: string;
+  groupName: string;
+  postText: string;
+  postUrl?: string;
+  authorName?: string;
+  suggestedReply: string;
+  timestamp: Date;
+  status: 'pending' | 'replied' | 'dismissed';
+}
+
+export interface DraftedReply {
+  id: string;
+  demandAlertId: string;
+  groupName: string;
+  originalPost: string;
+  replyText: string;
+  status: 'pending' | 'copied' | 'posted';
+  createdAt: Date;
+}
+
 export interface AgentStats {
   leadsThisWeek: number;
   leadsThisMonth: number;
@@ -50,6 +71,7 @@ export interface AgentStats {
   agentStatus: 'active' | 'paused' | 'error';
   lastRunAt?: Date;
   creditsRemaining: number;
+  wonThisWeek: number;
 }
 
 // Icon mapping for activity types

@@ -8,9 +8,9 @@ import {
   Linking,
   TextInput,
   Modal,
-  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { colors, fontSize, spacing, borderRadius } from '../../constants/theme';
 import { Lead } from '../../types/activity';
 import { MOCK_LEADS } from '../../data/mockData';
@@ -21,6 +21,21 @@ const STATUS_COLORS: Record<string, string> = {
   won: colors.success,
   lost: colors.error,
   no_answer: colors.textTertiary,
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  new: 'New',
+  contacted: 'Contacted',
+  won: 'Won',
+  lost: 'Lost',
+  no_answer: 'No Answer',
+};
+
+const URGENCY_LABELS: Record<string, string> = {
+  today: 'Today',
+  this_week: 'This week',
+  this_month: 'This month',
+  flexible: 'Flexible',
 };
 
 function formatTimeAgo(date: Date): string {
@@ -35,132 +50,86 @@ function formatTimeAgo(date: Date): string {
 interface LeadCardProps {
   lead: Lead;
   onCall: () => void;
-  onStatusChange: (status: Lead['status'], revenue?: number) => void;
+  onWon: () => void;
+  onLost: () => void;
 }
 
-function LeadCard({ lead, onCall, onStatusChange }: LeadCardProps) {
-  const [expanded, setExpanded] = useState(false);
-  const [showRevenueModal, setShowRevenueModal] = useState(false);
-  const [revenue, setRevenue] = useState('');
+function LeadCard({ lead, onCall, onWon, onLost }: LeadCardProps) {
+  const statusColor = STATUS_COLORS[lead.status];
+  const isActionable = lead.status !== 'won' && lead.status !== 'lost';
 
-  const handleWon = () => {
-    setExpanded(false);
-    setShowRevenueModal(true);
+  const renderRightActions = () => {
+    if (!isActionable) return null;
+    return (
+      <View style={styles.swipeActions}>
+        <TouchableOpacity style={[styles.swipeAction, styles.swipeActionWon]} onPress={onWon}>
+          <Text style={styles.swipeActionText}>Won</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.swipeAction, styles.swipeActionLost]} onPress={onLost}>
+          <Text style={styles.swipeActionText}>Lost</Text>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
-  const handleSubmitRevenue = () => {
-    onStatusChange('won', parseFloat(revenue) || 0);
-    setShowRevenueModal(false);
-    setRevenue('');
-  };
-
-  return (
-    <>
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => setExpanded(!expanded)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.cardMain}>
-          <View style={styles.cardContent}>
+  const CardContent = (
+    <View style={styles.card}>
+      <View style={styles.cardMain}>
+        <View style={styles.cardContent}>
+          <View style={styles.nameRow}>
             <Text style={styles.leadName}>{lead.name}</Text>
-            <Text style={styles.leadService}>{lead.serviceNeeded}</Text>
-            <View style={styles.cardMeta}>
-              <Text style={styles.metaText}>{lead.location}</Text>
-              <Text style={styles.metaDot}>·</Text>
-              <Text style={styles.metaText}>{formatTimeAgo(lead.createdAt)}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: statusColor + '20' }]}>
+              <Text style={[styles.statusText, { color: statusColor }]}>
+                {STATUS_LABELS[lead.status]}
+              </Text>
             </View>
           </View>
-          <View style={[styles.statusDot, { backgroundColor: STATUS_COLORS[lead.status] }]} />
-        </View>
-
-        {lead.status === 'won' && lead.revenue && (
-          <Text style={styles.revenue}>${lead.revenue.toLocaleString()}</Text>
-        )}
-
-        {expanded && (
-          <View style={styles.expandedContent}>
-            <TouchableOpacity style={styles.callButton} onPress={onCall}>
-              <Text style={styles.callButtonText}>Call {lead.name.split(' ')[0]}</Text>
-            </TouchableOpacity>
-
-            <View style={styles.statusButtons}>
-              {lead.status !== 'won' && (
-                <TouchableOpacity style={styles.statusButton} onPress={handleWon}>
-                  <Text style={[styles.statusButtonText, { color: colors.success }]}>Won</Text>
-                </TouchableOpacity>
-              )}
-              {lead.status !== 'lost' && (
-                <TouchableOpacity
-                  style={styles.statusButton}
-                  onPress={() => {
-                    setExpanded(false);
-                    onStatusChange('lost');
-                  }}
-                >
-                  <Text style={[styles.statusButtonText, { color: colors.error }]}>Lost</Text>
-                </TouchableOpacity>
-              )}
-              {lead.status !== 'no_answer' && lead.status !== 'won' && (
-                <TouchableOpacity
-                  style={styles.statusButton}
-                  onPress={() => {
-                    setExpanded(false);
-                    onStatusChange('no_answer');
-                  }}
-                >
-                  <Text style={styles.statusButtonText}>No answer</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        )}
-
-        <Text style={styles.source}>{lead.source}</Text>
-      </TouchableOpacity>
-
-      <Modal visible={showRevenueModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Revenue from this job?</Text>
-            <View style={styles.revenueInputContainer}>
-              <Text style={styles.dollarSign}>$</Text>
-              <TextInput
-                style={styles.revenueInput}
-                value={revenue}
-                onChangeText={setRevenue}
-                placeholder="0"
-                placeholderTextColor={colors.textTertiary}
-                keyboardType="numeric"
-                autoFocus
-              />
-            </View>
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => setShowRevenueModal(false)}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonPrimary]}
-                onPress={handleSubmitRevenue}
-              >
-                <Text style={styles.modalButtonPrimaryText}>Save</Text>
-              </TouchableOpacity>
-            </View>
+          <Text style={styles.leadService}>{lead.serviceNeeded}</Text>
+          <View style={styles.cardMeta}>
+            <Text style={styles.metaText}>{lead.location}</Text>
+            <Text style={styles.metaDot}>·</Text>
+            <Text style={styles.metaText}>{URGENCY_LABELS[lead.urgency]}</Text>
+            <Text style={styles.metaDot}>·</Text>
+            <Text style={styles.metaText}>{formatTimeAgo(lead.createdAt)}</Text>
           </View>
         </View>
-      </Modal>
-    </>
+        {lead.phone && isActionable && (
+          <TouchableOpacity style={styles.callButton} onPress={onCall}>
+            <Text style={styles.callButtonText}>Call</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {lead.status === 'won' && lead.revenue && (
+        <View style={styles.revenueRow}>
+          <Text style={styles.revenueLabel}>Revenue:</Text>
+          <Text style={styles.revenueValue}>${lead.revenue.toLocaleString()}</Text>
+        </View>
+      )}
+
+      <Text style={styles.source}>via {lead.source}</Text>
+    </View>
   );
+
+  if (isActionable) {
+    return (
+      <Swipeable renderRightActions={renderRightActions} overshootRight={false}>
+        {CardContent}
+      </Swipeable>
+    );
+  }
+
+  return CardContent;
 }
 
 export function LeadsScreen() {
   const [leads, setLeads] = useState<Lead[]>(MOCK_LEADS);
   const [filter, setFilter] = useState<Lead['status'] | 'all'>('all');
+  const [showRevenueModal, setShowRevenueModal] = useState(false);
+  const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
+  const [revenue, setRevenue] = useState('');
 
-  const filteredLeads = filter === 'all' ? leads : leads.filter((l) => l.status === filter);
+  const filteredLeads = filter === 'all' ? leads : leads.filter(l => l.status === filter);
 
   const handleCall = (lead: Lead) => {
     if (lead.phone) {
@@ -168,62 +137,125 @@ export function LeadsScreen() {
     }
   };
 
-  const handleStatusChange = (leadId: string, status: Lead['status'], revenue?: number) => {
-    setLeads((prev) =>
-      prev.map((l) =>
-        l.id === leadId ? { ...l, status, revenue: revenue ?? l.revenue } : l
-      )
+  const handleWon = (leadId: string) => {
+    setSelectedLeadId(leadId);
+    setShowRevenueModal(true);
+  };
+
+  const handleSubmitRevenue = () => {
+    if (selectedLeadId) {
+      setLeads(prev =>
+        prev.map(l =>
+          l.id === selectedLeadId ? { ...l, status: 'won' as const, revenue: parseFloat(revenue) || 0 } : l
+        )
+      );
+    }
+    setShowRevenueModal(false);
+    setRevenue('');
+    setSelectedLeadId(null);
+  };
+
+  const handleLost = (leadId: string) => {
+    setLeads(prev =>
+      prev.map(l => (l.id === leadId ? { ...l, status: 'lost' as const } : l))
     );
   };
 
   const stats = {
-    new: leads.filter((l) => l.status === 'new').length,
-    won: leads.filter((l) => l.status === 'won').length,
+    new: leads.filter(l => l.status === 'new').length,
+    won: leads.filter(l => l.status === 'won').length,
+    totalRevenue: leads.filter(l => l.status === 'won').reduce((sum, l) => sum + (l.revenue || 0), 0),
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Leads</Text>
-        <Text style={styles.subtitle}>
-          {stats.new} new · {stats.won} won
-        </Text>
-      </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Leads</Text>
+          <Text style={styles.subtitle}>
+            {stats.new} new · {stats.won} won · ${stats.totalRevenue.toLocaleString()}
+          </Text>
+        </View>
 
-      <View style={styles.filters}>
-        {(['all', 'new', 'contacted', 'won'] as const).map((f) => (
-          <TouchableOpacity
-            key={f}
-            style={[styles.filterTab, filter === f && styles.filterTabActive]}
-            onPress={() => setFilter(f)}
-          >
-            <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>
-              {f.charAt(0).toUpperCase() + f.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+        <View style={styles.filters}>
+          {(['all', 'new', 'contacted', 'won', 'lost'] as const).map(f => (
+            <TouchableOpacity
+              key={f}
+              style={[styles.filterTab, filter === f && styles.filterTabActive]}
+              onPress={() => setFilter(f)}
+            >
+              <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>
+                {f.charAt(0).toUpperCase() + f.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-      <FlatList
-        data={filteredLeads}
-        renderItem={({ item }) => (
-          <LeadCard
-            lead={item}
-            onCall={() => handleCall(item)}
-            onStatusChange={(status, revenue) => handleStatusChange(item.id, status, revenue)}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyText}>No leads yet</Text>
-            <Text style={styles.emptySubtext}>Barker is scanning for customers</Text>
+        <FlatList
+          data={filteredLeads}
+          renderItem={({ item }) => (
+            <LeadCard
+              lead={item}
+              onCall={() => handleCall(item)}
+              onWon={() => handleWon(item.id)}
+              onLost={() => handleLost(item.id)}
+            />
+          )}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <Text style={styles.emptyText}>No leads found</Text>
+              <Text style={styles.emptySubtext}>
+                {filter === 'all'
+                  ? 'Barker is scanning for customers'
+                  : `No ${filter} leads yet`}
+              </Text>
+            </View>
+          }
+        />
+
+        {/* Revenue Modal */}
+        <Modal visible={showRevenueModal} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modal}>
+              <Text style={styles.modalTitle}>Revenue from this job?</Text>
+              <View style={styles.revenueInputContainer}>
+                <Text style={styles.dollarSign}>$</Text>
+                <TextInput
+                  style={styles.revenueInput}
+                  value={revenue}
+                  onChangeText={setRevenue}
+                  placeholder="0"
+                  placeholderTextColor={colors.textTertiary}
+                  keyboardType="numeric"
+                  autoFocus
+                />
+              </View>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={() => {
+                    setShowRevenueModal(false);
+                    setRevenue('');
+                    setSelectedLeadId(null);
+                  }}
+                >
+                  <Text style={styles.modalButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonPrimary]}
+                  onPress={handleSubmitRevenue}
+                >
+                  <Text style={styles.modalButtonPrimaryText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-        }
-      />
-    </SafeAreaView>
+        </Modal>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
@@ -235,7 +267,7 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: spacing.screen,
     paddingTop: spacing.lg,
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.md,
   },
   title: {
     fontSize: fontSize.hero,
@@ -255,7 +287,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   filterTab: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: borderRadius.full,
   },
@@ -278,7 +310,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.md,
     padding: spacing.lg,
-    marginBottom: spacing.lg,
+    marginBottom: 10,
   },
   cardMain: {
     flexDirection: 'row',
@@ -287,21 +319,36 @@ const styles = StyleSheet.create({
   cardContent: {
     flex: 1,
   },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
   leadName: {
     fontSize: fontSize.title,
     fontWeight: '600',
     color: colors.textPrimary,
     letterSpacing: -0.3,
   },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
   leadService: {
     fontSize: fontSize.subhead,
-    color: colors.textSecondary,
-    marginTop: 4,
+    color: colors.accent,
+    fontWeight: '500',
+    marginBottom: 8,
   },
   cardMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
   },
   metaText: {
     fontSize: fontSize.footnote,
@@ -312,54 +359,62 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     marginHorizontal: 6,
   },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginTop: 6,
+  callButton: {
+    backgroundColor: colors.success,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: borderRadius.sm,
+    marginLeft: spacing.md,
   },
-  revenue: {
+  callButtonText: {
+    fontSize: fontSize.subhead,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  revenueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.separator,
+  },
+  revenueLabel: {
+    fontSize: fontSize.subhead,
+    color: colors.textSecondary,
+    marginRight: 8,
+  },
+  revenueValue: {
     fontSize: fontSize.title,
     fontWeight: '600',
     color: colors.success,
-    marginTop: spacing.md,
   },
   source: {
     fontSize: fontSize.caption,
     color: colors.textTertiary,
     marginTop: spacing.md,
   },
-  expandedContent: {
-    marginTop: spacing.lg,
-    paddingTop: spacing.lg,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.separator,
-  },
-  callButton: {
-    backgroundColor: colors.accent,
-    borderRadius: borderRadius.sm,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  callButtonText: {
-    fontSize: fontSize.body,
-    fontWeight: '600',
-    color: colors.background,
-  },
-  statusButtons: {
+  swipeActions: {
     flexDirection: 'row',
-    marginTop: spacing.md,
-    gap: spacing.sm,
+    marginLeft: 10,
   },
-  statusButton: {
-    flex: 1,
-    paddingVertical: 12,
+  swipeAction: {
+    justifyContent: 'center',
     alignItems: 'center',
+    width: 70,
+    borderRadius: borderRadius.md,
   },
-  statusButtonText: {
+  swipeActionWon: {
+    backgroundColor: colors.success,
+    marginRight: 8,
+  },
+  swipeActionLost: {
+    backgroundColor: colors.error,
+  },
+  swipeActionText: {
     fontSize: fontSize.subhead,
-    fontWeight: '500',
-    color: colors.textSecondary,
+    fontWeight: '600',
+    color: colors.textPrimary,
   },
   empty: {
     alignItems: 'center',

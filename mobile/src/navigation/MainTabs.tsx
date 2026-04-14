@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { ActivityFeedScreen, LeadsScreen, StatsScreen, SettingsScreen } from '../screens/main';
+import { HomeScreen, LeadsScreen, RepliesScreen, SettingsScreen } from '../screens/main';
 import { colors } from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
@@ -9,40 +9,42 @@ const Tab = createBottomTabNavigator();
 const TabIcon = ({ icon, focused }: { icon: string; focused: boolean }) => (
   <View style={styles.iconContainer}>
     <View style={[styles.icon, focused && styles.iconActive]}>
-      {icon === 'activity' && <ActivityIcon focused={focused} />}
+      {icon === 'home' && <HomeIcon focused={focused} />}
       {icon === 'leads' && <LeadsIcon focused={focused} />}
-      {icon === 'stats' && <StatsIcon focused={focused} />}
+      {icon === 'replies' && <RepliesIcon focused={focused} />}
       {icon === 'settings' && <SettingsIcon focused={focused} />}
     </View>
     {focused && <View style={styles.indicator} />}
   </View>
 );
 
-// Minimal SF Symbol-style icons
-const ActivityIcon = ({ focused }: { focused: boolean }) => (
-  <View style={styles.iconShape}>
-    <View style={[styles.waveBar, styles.waveBar1, focused && styles.barActive]} />
-    <View style={[styles.waveBar, styles.waveBar2, focused && styles.barActive]} />
-    <View style={[styles.waveBar, styles.waveBar3, focused && styles.barActive]} />
-    <View style={[styles.waveBar, styles.waveBar2, focused && styles.barActive]} />
-    <View style={[styles.waveBar, styles.waveBar1, focused && styles.barActive]} />
+// House icon
+const HomeIcon = ({ focused }: { focused: boolean }) => (
+  <View style={styles.homeIcon}>
+    <View style={[styles.homeRoof, focused && styles.iconPartActive]} />
+    <View style={[styles.homeBody, focused && styles.iconPartActive]} />
   </View>
 );
 
+// People icon
 const LeadsIcon = ({ focused }: { focused: boolean }) => (
-  <View style={[styles.targetOuter, focused && styles.targetActive]}>
-    <View style={[styles.targetInner, focused && styles.targetInnerActive]} />
+  <View style={styles.leadsIcon}>
+    <View style={[styles.personHead, focused && styles.iconPartActive]} />
+    <View style={[styles.personBody, focused && styles.iconPartActive]} />
+    <View style={[styles.personHead, styles.person2Head, focused && styles.iconPartActive]} />
+    <View style={[styles.personBody, styles.person2Body, focused && styles.iconPartActive]} />
   </View>
 );
 
-const StatsIcon = ({ focused }: { focused: boolean }) => (
-  <View style={styles.statsContainer}>
-    <View style={[styles.statBar, styles.statBar1, focused && styles.barActive]} />
-    <View style={[styles.statBar, styles.statBar2, focused && styles.barActive]} />
-    <View style={[styles.statBar, styles.statBar3, focused && styles.barActive]} />
+// Chat bubble icon
+const RepliesIcon = ({ focused }: { focused: boolean }) => (
+  <View style={styles.repliesIcon}>
+    <View style={[styles.chatBubble, focused && styles.chatBubbleActive]} />
+    <View style={[styles.chatTail, focused && styles.chatTailActive]} />
   </View>
 );
 
+// Gear icon
 const SettingsIcon = ({ focused }: { focused: boolean }) => (
   <View style={[styles.gearOuter, focused && styles.gearActive]}>
     <View style={[styles.gearInner, focused && styles.gearInnerActive]} />
@@ -59,10 +61,10 @@ export function MainTabs() {
       }}
     >
       <Tab.Screen
-        name="Activity"
-        component={ActivityFeedScreen}
+        name="Home"
+        component={HomeScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="activity" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon icon="home" focused={focused} />,
         }}
       />
       <Tab.Screen
@@ -73,10 +75,10 @@ export function MainTabs() {
         }}
       />
       <Tab.Screen
-        name="Stats"
-        component={StatsScreen}
+        name="Replies"
+        component={RepliesScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon icon="stats" focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon icon="replies" focused={focused} />,
         }}
       />
       <Tab.Screen
@@ -120,60 +122,105 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
     marginTop: 6,
   },
-  iconShape: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 3,
-    height: 20,
-  },
-  waveBar: {
-    width: 3,
-    backgroundColor: colors.textTertiary,
-    borderRadius: 1.5,
-  },
-  waveBar1: { height: 8 },
-  waveBar2: { height: 14 },
-  waveBar3: { height: 20 },
-  barActive: {
+  iconPartActive: {
     backgroundColor: colors.accent,
-  },
-  targetOuter: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: colors.textTertiary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  targetActive: {
     borderColor: colors.accent,
   },
-  targetInner: {
+  // Home icon
+  homeIcon: {
+    width: 22,
+    height: 20,
+    alignItems: 'center',
+  },
+  homeRoof: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 11,
+    borderRightWidth: 11,
+    borderBottomWidth: 9,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: colors.textTertiary,
+  },
+  homeBody: {
+    width: 16,
+    height: 10,
+    backgroundColor: colors.textTertiary,
+    borderBottomLeftRadius: 2,
+    borderBottomRightRadius: 2,
+    marginTop: -1,
+  },
+  // Leads icon (people)
+  leadsIcon: {
+    width: 26,
+    height: 20,
+    position: 'relative',
+  },
+  personHead: {
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: colors.textTertiary,
+    position: 'absolute',
+    left: 3,
+    top: 0,
   },
-  targetInnerActive: {
-    backgroundColor: colors.accent,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    gap: 4,
-    height: 20,
-  },
-  statBar: {
-    width: 6,
+  personBody: {
+    width: 14,
+    height: 8,
+    borderTopLeftRadius: 7,
+    borderTopRightRadius: 7,
     backgroundColor: colors.textTertiary,
-    borderRadius: 2,
+    position: 'absolute',
+    left: 0,
+    top: 10,
   },
-  statBar1: { height: 10 },
-  statBar2: { height: 16 },
-  statBar3: { height: 20 },
+  person2Head: {
+    left: 15,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
+  person2Body: {
+    width: 12,
+    left: 14,
+    top: 11,
+    height: 7,
+  },
+  // Replies icon (chat bubble)
+  repliesIcon: {
+    width: 24,
+    height: 20,
+    position: 'relative',
+  },
+  chatBubble: {
+    width: 22,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: colors.textTertiary,
+    backgroundColor: 'transparent',
+  },
+  chatBubbleActive: {
+    borderColor: colors.accent,
+  },
+  chatTail: {
+    position: 'absolute',
+    bottom: 0,
+    left: 4,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 6,
+    borderRightWidth: 0,
+    borderTopWidth: 6,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderTopColor: colors.textTertiary,
+  },
+  chatTailActive: {
+    borderTopColor: colors.accent,
+  },
+  // Settings icon (gear)
   gearOuter: {
     width: 22,
     height: 22,

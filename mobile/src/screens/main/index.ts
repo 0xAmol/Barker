@@ -1,4 +1,4 @@
-export { ActivityFeedScreen } from './ActivityFeedScreen';
+export { HomeScreen } from './HomeScreen';
 export { LeadsScreen } from './LeadsScreen';
-export { StatsScreen } from './StatsScreen';
+export { RepliesScreen } from './RepliesScreen';
 export { SettingsScreen } from './SettingsScreen';

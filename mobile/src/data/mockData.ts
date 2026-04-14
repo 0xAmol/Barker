@@ -1,6 +1,6 @@
 // Mock data for development
 
-import { ActivityEvent, Lead, AgentStats } from '../types/activity';
+import { ActivityEvent, Lead, AgentStats, DemandAlert, DraftedReply } from '../types/activity';
 
 // Generate mock activity events
 export const generateMockActivities = (): ActivityEvent[] => {
@@ -196,9 +196,9 @@ export const MOCK_LEADS: Lead[] = [
 
 // Mock stats
 export const MOCK_STATS: AgentStats = {
-  leadsThisWeek: 8,
+  leadsThisWeek: 4,
   leadsThisMonth: 23,
-  revenueThisWeek: 1840,
+  revenueThisWeek: 3400,
   revenueThisMonth: 5420,
   postsScanned: 847,
   repliesPosted: 12,
@@ -207,7 +207,70 @@ export const MOCK_STATS: AgentStats = {
   agentStatus: 'active',
   lastRunAt: new Date(Date.now() - 120000),
   creditsRemaining: 47,
+  wonThisWeek: 2,
 };
+
+// Mock demand alerts
+export const MOCK_DEMAND_ALERTS: DemandAlert[] = [
+  {
+    id: 'da1',
+    groupName: 'Katy TX Homeowners',
+    postText: 'Anyone know a good plumber? My bathroom faucet is leaking pretty bad and I need someone who can come out today if possible.',
+    authorName: 'Linda S.',
+    suggestedReply: "Hey! I'm Dave with Johnson Plumbing — bathroom leaks are our bread and butter. We're in Katy and can usually get out same day. Happy to take a look, free estimate: barker.app/q/johnson-plumbing",
+    timestamp: new Date(Date.now() - 300000),
+    status: 'pending',
+  },
+  {
+    id: 'da2',
+    groupName: 'Sugar Land Recommendations',
+    postText: 'Rec needed for plumber. Water heater is making weird noises and I want someone to check it before it dies on me.',
+    authorName: 'Tom B.',
+    suggestedReply: "Hey! I'm Dave with Johnson Plumbing — water heaters acting up can definitely be stressful. We service Sugar Land and can diagnose what's going on. Here's our page for a free estimate: barker.app/q/johnson-plumbing",
+    timestamp: new Date(Date.now() - 1800000),
+    status: 'pending',
+  },
+  {
+    id: 'da3',
+    groupName: 'Houston Home Owners',
+    postText: 'Need plumber ASAP! Toilet is clogged and my plunger isn\'t working. Any recommendations for someone available today?',
+    authorName: 'Chris M.',
+    suggestedReply: "Hey! I'm Dave with Johnson Plumbing — clogged toilets that won't budge usually mean something's stuck deeper in the line. We can usually get out same day in the Houston area. Free estimate here: barker.app/q/johnson-plumbing",
+    timestamp: new Date(Date.now() - 7200000),
+    status: 'pending',
+  },
+];
+
+// Mock drafted replies
+export const MOCK_DRAFTED_REPLIES: DraftedReply[] = [
+  {
+    id: 'dr1',
+    demandAlertId: 'da1',
+    groupName: 'Katy TX Homeowners',
+    originalPost: 'Anyone know a good plumber? My bathroom faucet is leaking...',
+    replyText: "Hey! I'm Dave with Johnson Plumbing — bathroom leaks are our bread and butter. We're in Katy and can usually get out same day. Happy to take a look, free estimate: barker.app/q/johnson-plumbing",
+    status: 'pending',
+    createdAt: new Date(Date.now() - 300000),
+  },
+  {
+    id: 'dr2',
+    demandAlertId: 'da2',
+    groupName: 'Sugar Land Recommendations',
+    originalPost: 'Rec needed for plumber. Water heater is making weird noises...',
+    replyText: "Hey! I'm Dave with Johnson Plumbing — water heaters acting up can definitely be stressful. We service Sugar Land and can diagnose what's going on. Here's our page for a free estimate: barker.app/q/johnson-plumbing",
+    status: 'pending',
+    createdAt: new Date(Date.now() - 1800000),
+  },
+  {
+    id: 'dr3',
+    demandAlertId: 'da3',
+    groupName: 'Houston Home Owners',
+    originalPost: 'Need plumber ASAP! Toilet is clogged...',
+    replyText: "Hey! I'm Dave with Johnson Plumbing — clogged toilets that won't budge usually mean something's stuck deeper in the line. We can usually get out same day in the Houston area. Free estimate here: barker.app/q/johnson-plumbing",
+    status: 'copied',
+    createdAt: new Date(Date.now() - 7200000),
+  },
+];
 
 // Generate a new activity event (for simulating live feed)
 export const generateNewActivity = (): ActivityEvent => {
