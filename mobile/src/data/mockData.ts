@@ -135,6 +135,28 @@ export const MOCK_LEADS: Lead[] = [
     createdAt: new Date(Date.now() - 300000),
   },
   {
+    id: '1a',
+    name: 'James P.',
+    phone: '(713) 555-0384',
+    serviceNeeded: 'Water heater replacement',
+    location: 'Heights, TX',
+    urgency: 'this_week',
+    source: 'Houston Home Owners',
+    status: 'new',
+    createdAt: new Date(Date.now() - 1320000), // 22m ago
+  },
+  {
+    id: '1b',
+    name: 'Angela R.',
+    phone: '(832) 555-0729',
+    serviceNeeded: 'Pipe burst emergency',
+    location: 'Montrose, TX',
+    urgency: 'today',
+    source: 'West Houston Neighbors',
+    status: 'new',
+    createdAt: new Date(Date.now() - 3600000), // 1h ago
+  },
+  {
     id: '2',
     name: 'Mike R.',
     phone: '(281) 555-0847',

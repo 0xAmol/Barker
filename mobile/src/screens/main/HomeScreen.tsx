@@ -60,8 +60,10 @@ function LeadCard({ lead, onCall, onWon, onLost }: LeadCardProps) {
           <Text style={styles.leadService}>{lead.serviceNeeded}</Text>
           <View style={styles.leadMeta}>
             <Text style={styles.leadLocation}>{lead.location}</Text>
-            <View style={styles.urgencyBadge}>
-              <Text style={styles.urgencyText}>{URGENCY_LABELS[lead.urgency]}</Text>
+            <View style={[styles.urgencyBadge, lead.urgency === 'today' && styles.urgencyBadgeUrgent]}>
+              <Text style={[styles.urgencyText, lead.urgency === 'today' && styles.urgencyTextUrgent]}>
+                {URGENCY_LABELS[lead.urgency]}
+              </Text>
             </View>
             <Text style={styles.leadTime}>{formatTimeAgo(lead.createdAt)}</Text>
           </View>
@@ -141,7 +143,7 @@ function StatsBar({ leads, won, revenue, onPress }: StatsBarProps) {
   return (
     <TouchableOpacity style={styles.statsBar} onPress={onPress} activeOpacity={0.7}>
       <Text style={styles.statsText}>
-        This week: <Text style={styles.statsHighlight}>{leads} leads</Text> · {won} won · ${revenue.toLocaleString()}
+        This week: <Text style={styles.statsHighlight}>{leads} leads</Text> · {won} won · <Text style={styles.statsRevenue}>${revenue.toLocaleString()}</Text>
       </Text>
       <Text style={styles.statsChevron}>›</Text>
     </TouchableOpacity>
@@ -224,9 +226,14 @@ export function HomeScreen() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaView style={styles.container} edges={['top']}>
         <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <Text style={styles.logo}>Barker</Text>
+          </View>
+
           {/* New Leads Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionHeader}>NEW LEADS</Text>
+            <Text style={styles.sectionHeader}>NEW LEADS ({newLeads.length})</Text>
             {newLeads.length > 0 ? (
               <View style={styles.leadsList}>
                 {newLeads.map(lead => (
@@ -246,7 +253,7 @@ export function HomeScreen() {
 
           {/* Demand Alerts Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionHeaderSecondary}>DEMAND ALERTS</Text>
+            <Text style={styles.sectionHeader}>DEMAND ALERTS</Text>
             {alerts.length > 0 ? (
               <View style={styles.alertsList}>
                 {alerts.map(alert => (
@@ -324,6 +331,17 @@ const styles = StyleSheet.create({
   scroll: {
     flex: 1,
   },
+  logoContainer: {
+    paddingHorizontal: spacing.screen,
+    paddingTop: spacing.md,
+  },
+  logo: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    fontFamily: 'Georgia',
+    letterSpacing: -0.5,
+  },
   section: {
     paddingHorizontal: spacing.screen,
     paddingTop: spacing.lg,
@@ -334,14 +352,6 @@ const styles = StyleSheet.create({
     color: colors.accent,
     letterSpacing: 1,
     marginBottom: spacing.md,
-  },
-  sectionHeaderSecondary: {
-    fontSize: fontSize.footnote,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
-    marginBottom: spacing.md,
-    marginTop: spacing.lg,
   },
   leadsList: {
     gap: 10,
@@ -383,10 +393,16 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
   },
+  urgencyBadgeUrgent: {
+    backgroundColor: 'rgba(255, 69, 58, 0.15)',
+  },
   urgencyText: {
     fontSize: 11,
     fontWeight: '600',
     color: colors.accent,
+  },
+  urgencyTextUrgent: {
+    color: colors.error,
   },
   leadTime: {
     fontSize: fontSize.footnote,
@@ -573,6 +589,10 @@ const styles = StyleSheet.create({
   },
   statsHighlight: {
     color: colors.textPrimary,
+    fontWeight: '600',
+  },
+  statsRevenue: {
+    color: '#34C759',
     fontWeight: '600',
   },
   statsChevron: {
