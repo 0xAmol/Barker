@@ -11,12 +11,20 @@ import {
   Animated,
   Clipboard,
   Alert,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { colors, fontSize, spacing, borderRadius } from '../../constants/theme';
 import { Lead, DemandAlert } from '../../types/activity';
 import { MOCK_LEADS, MOCK_DEMAND_ALERTS, MOCK_STATS } from '../../data/mockData';
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const URGENCY_LABELS: Record<string, string> = {
   today: 'Today',
@@ -33,6 +41,50 @@ function formatTimeAgo(date: Date): string {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
+// Pulsing dot component for scanning indicator
+function PulsingDot() {
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 0.4, duration: 1000, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [pulseAnim]);
+
+  return (
+    <Animated.View style={[styles.scanningDot, { opacity: pulseAnim }]} />
+  );
+}
+
+// Animated Call Button with subtle pulse
+function AnimatedCallButton({ onPress }: { onPress: () => void }) {
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 0.85, duration: 1000, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [pulseAnim]);
+
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+      <Animated.View style={[styles.callButton, { opacity: pulseAnim }]}>
+        <Text style={styles.callButtonText}>Call</Text>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
+
 interface LeadCardProps {
   lead: Lead;
   onCall: () => void;
@@ -41,6 +93,9 @@ interface LeadCardProps {
 }
 
 function LeadCard({ lead, onCall, onWon, onLost }: LeadCardProps) {
+  const isUrgent = lead.urgency === 'today';
+  const borderColor = isUrgent ? colors.error : colors.accent;
+
   const renderRightActions = () => (
     <View style={styles.swipeActions}>
       <TouchableOpacity style={[styles.swipeAction, styles.swipeActionWon]} onPress={onWon}>
@@ -54,23 +109,21 @@ function LeadCard({ lead, onCall, onWon, onLost }: LeadCardProps) {
 
   return (
     <Swipeable renderRightActions={renderRightActions} overshootRight={false}>
-      <View style={styles.leadCard}>
+      <View style={[styles.leadCard, { borderLeftColor: borderColor }]}>
         <View style={styles.leadCardContent}>
           <Text style={styles.leadName}>{lead.name}</Text>
           <Text style={styles.leadService}>{lead.serviceNeeded}</Text>
           <View style={styles.leadMeta}>
             <Text style={styles.leadLocation}>{lead.location}</Text>
-            <View style={[styles.urgencyBadge, lead.urgency === 'today' && styles.urgencyBadgeUrgent]}>
-              <Text style={[styles.urgencyText, lead.urgency === 'today' && styles.urgencyTextUrgent]}>
+            <View style={[styles.urgencyBadge, isUrgent && styles.urgencyBadgeUrgent]}>
+              <Text style={[styles.urgencyText, isUrgent && styles.urgencyTextUrgent]}>
                 {URGENCY_LABELS[lead.urgency]}
               </Text>
             </View>
             <Text style={styles.leadTime}>{formatTimeAgo(lead.createdAt)}</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.callButton} onPress={onCall}>
-          <Text style={styles.callButtonText}>Call</Text>
-        </TouchableOpacity>
+        <AnimatedCallButton onPress={onCall} />
       </View>
     </Swipeable>
   );
@@ -83,6 +136,12 @@ interface DemandAlertCardProps {
 
 function DemandAlertCard({ alert, onViewReply }: DemandAlertCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const expandAnim = useRef(new Animated.Value(0)).current;
+
+  const handleToggle = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded(!expanded);
+  };
 
   const handleCopyReply = () => {
     Clipboard.setString(alert.suggestedReply);
@@ -90,13 +149,12 @@ function DemandAlertCard({ alert, onViewReply }: DemandAlertCardProps) {
   };
 
   const handleOpenFacebook = () => {
-    // In a real app, this would open the actual Facebook post
     Linking.openURL('https://facebook.com');
   };
 
   return (
     <View style={styles.alertCard}>
-      <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
+      <TouchableOpacity onPress={handleToggle} activeOpacity={0.7}>
         <View style={styles.alertHeader}>
           <Text style={styles.alertGroup}>{alert.groupName}</Text>
           <Text style={styles.alertTime}>{formatTimeAgo(alert.timestamp)}</Text>
@@ -107,7 +165,7 @@ function DemandAlertCard({ alert, onViewReply }: DemandAlertCardProps) {
       </TouchableOpacity>
 
       {!expanded && (
-        <TouchableOpacity style={styles.viewReplyButton} onPress={() => setExpanded(true)}>
+        <TouchableOpacity style={styles.viewReplyButton} onPress={handleToggle}>
           <Text style={styles.viewReplyText}>View & Reply</Text>
         </TouchableOpacity>
       )}
@@ -140,12 +198,39 @@ interface StatsBarProps {
 }
 
 function StatsBar({ leads, won, revenue, onPress }: StatsBarProps) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.98,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 0,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start();
+  };
+
   return (
-    <TouchableOpacity style={styles.statsBar} onPress={onPress} activeOpacity={0.7}>
-      <Text style={styles.statsText}>
-        This week: <Text style={styles.statsHighlight}>{leads} leads</Text> · {won} won · <Text style={styles.statsRevenue}>${revenue.toLocaleString()}</Text>
-      </Text>
-      <Text style={styles.statsChevron}>›</Text>
+    <TouchableOpacity
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={1}
+    >
+      <Animated.View style={[styles.statsBar, { transform: [{ scale: scaleAnim }] }]}>
+        <Text style={styles.statsText}>
+          This week: <Text style={styles.statsHighlight}>{leads} leads</Text> · {won} won · <Text style={styles.statsRevenue}>▲ ${revenue.toLocaleString()}</Text>
+        </Text>
+        <Text style={styles.statsChevron}>›</Text>
+      </Animated.View>
     </TouchableOpacity>
   );
 }
@@ -253,7 +338,10 @@ export function HomeScreen() {
 
           {/* Demand Alerts Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionHeader}>DEMAND ALERTS</Text>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionHeader}>DEMAND ALERTS</Text>
+              <PulsingDot />
+            </View>
             {alerts.length > 0 ? (
               <View style={styles.alertsList}>
                 {alerts.map(alert => (
@@ -346,11 +434,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.screen,
     paddingTop: spacing.lg,
   },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
   sectionHeader: {
     fontSize: fontSize.footnote,
     fontWeight: '700',
     color: colors.accent,
     letterSpacing: 1,
+    marginBottom: spacing.md,
+  },
+  scanningDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.success,
+    marginLeft: 8,
     marginBottom: spacing.md,
   },
   leadsList: {
@@ -362,6 +463,8 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
+    borderLeftWidth: 3,
+    borderLeftColor: colors.accent,
   },
   leadCardContent: {
     flex: 1,
@@ -449,6 +552,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.backgroundCard,
     borderRadius: borderRadius.md,
     padding: spacing.lg,
+    overflow: 'hidden',
   },
   alertHeader: {
     flexDirection: 'row',

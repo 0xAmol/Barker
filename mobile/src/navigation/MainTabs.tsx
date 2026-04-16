@@ -1,22 +1,52 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, StyleSheet, Animated } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { HomeScreen, LeadsScreen, RepliesScreen, SettingsScreen } from '../screens/main';
 import { colors } from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
 
-const TabIcon = ({ icon, focused }: { icon: string; focused: boolean }) => (
-  <View style={styles.iconContainer}>
-    <View style={[styles.icon, focused && styles.iconActive]}>
-      {icon === 'home' && <HomeIcon focused={focused} />}
-      {icon === 'leads' && <LeadsIcon focused={focused} />}
-      {icon === 'replies' && <RepliesIcon focused={focused} />}
-      {icon === 'settings' && <SettingsIcon focused={focused} />}
+const TabIcon = ({ icon, focused }: { icon: string; focused: boolean }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const prevFocused = useRef(focused);
+
+  useEffect(() => {
+    // Only animate when becoming focused (not on initial render)
+    if (focused && !prevFocused.current) {
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.15,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+    prevFocused.current = focused;
+  }, [focused, scaleAnim]);
+
+  return (
+    <View style={styles.iconContainer}>
+      <Animated.View
+        style={[
+          styles.icon,
+          focused && styles.iconActive,
+          { transform: [{ scale: scaleAnim }] },
+        ]}
+      >
+        {icon === 'home' && <HomeIcon focused={focused} />}
+        {icon === 'leads' && <LeadsIcon focused={focused} />}
+        {icon === 'replies' && <RepliesIcon focused={focused} />}
+        {icon === 'settings' && <SettingsIcon focused={focused} />}
+      </Animated.View>
+      {focused && <View style={styles.indicator} />}
     </View>
-    {focused && <View style={styles.indicator} />}
-  </View>
-);
+  );
+};
 
 // House icon
 const HomeIcon = ({ focused }: { focused: boolean }) => (

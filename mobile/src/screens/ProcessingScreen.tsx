@@ -6,6 +6,25 @@ import { useOnboarding } from '../context/OnboardingContext';
 import { SERVICE_OPTIONS } from '../types';
 import { colors, spacing } from '../constants/theme';
 
+// Animated dots component that cycles ...
+function AnimatedDots() {
+  const [dotCount, setDotCount] = useState(1);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDotCount((prev) => (prev % 3) + 1);
+    }, 400);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <Text style={styles.dots_text}>
+      {'.'.repeat(dotCount)}
+      <Text style={styles.dots_invisible}>{'.'.repeat(3 - dotCount)}</Text>
+    </Text>
+  );
+}
+
 type Props = {
   navigation: NativeStackNavigationProp<any>;
 };
@@ -90,9 +109,12 @@ export function ProcessingScreen({ navigation }: Props) {
             <Text style={styles.icon}>🔍</Text>
           </Animated.View>
 
-          <Animated.Text style={[styles.message, { opacity: fadeValue }]}>
-            {messages[messageIndex]}
-          </Animated.Text>
+          <Animated.View style={[styles.messageContainer, { opacity: fadeValue }]}>
+            <Text style={styles.message}>
+              {messages[messageIndex].replace('...', '')}
+            </Text>
+            <AnimatedDots />
+          </Animated.View>
 
           <View style={styles.dots}>
             {messages.map((_, index) => (
@@ -130,13 +152,27 @@ const styles = StyleSheet.create({
   icon: {
     fontSize: 36,
   },
+  messageContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 52,
+    paddingHorizontal: spacing.md,
+  },
   message: {
     fontSize: 18,
     color: colors.textPrimary,
     textAlign: 'center',
     lineHeight: 26,
-    minHeight: 52,
-    paddingHorizontal: spacing.md,
+  },
+  dots_text: {
+    fontSize: 18,
+    color: colors.textPrimary,
+    fontWeight: '600',
+    width: 24,
+  },
+  dots_invisible: {
+    color: 'transparent',
   },
   dots: {
     flexDirection: 'row',

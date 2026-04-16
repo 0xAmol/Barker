@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components';
@@ -10,8 +10,39 @@ type Props = {
 };
 
 function NotificationCard() {
+  const slideAnim = useRef(new Animated.Value(20)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Delay 300ms, then slide in from right
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [slideAnim, opacityAnim]);
+
   return (
-    <View style={styles.notificationCard}>
+    <Animated.View
+      style={[
+        styles.notificationCard,
+        {
+          transform: [{ translateX: slideAnim }],
+          opacity: opacityAnim,
+        },
+      ]}
+    >
       <View style={styles.notificationGoldBar} />
       <View style={styles.notificationContent}>
         <View style={styles.notificationHeader}>
@@ -29,7 +60,7 @@ function NotificationCard() {
           Tap to call: (832) 555-0147
         </Text>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
