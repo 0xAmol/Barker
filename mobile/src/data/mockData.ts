@@ -263,6 +263,66 @@ export const MOCK_DEMAND_ALERTS: DemandAlert[] = [
   },
 ];
 
+// Mock credit transactions
+export interface CreditTransaction {
+  id: string;
+  type: 'lead_charge' | 'top_up';
+  description: string;
+  amount: number; // positive for top-up, negative for charge
+  timestamp: Date;
+  leadName?: string;
+  service?: string;
+}
+
+export const MOCK_CREDIT_BALANCE = 73.0;
+export const MOCK_LAST_TOP_UP = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000); // 4 days ago
+
+export const MOCK_CREDIT_TRANSACTIONS: CreditTransaction[] = [
+  {
+    id: 'ct1',
+    type: 'lead_charge',
+    description: 'Lead: Sarah M.',
+    amount: -15,
+    timestamp: new Date(Date.now() - 300000),
+    leadName: 'Sarah M.',
+    service: 'Kitchen sink leak',
+  },
+  {
+    id: 'ct2',
+    type: 'lead_charge',
+    description: 'Lead: James P.',
+    amount: -20,
+    timestamp: new Date(Date.now() - 1320000),
+    leadName: 'James P.',
+    service: 'Water heater',
+  },
+  {
+    id: 'ct3',
+    type: 'top_up',
+    description: 'Top up',
+    amount: 100,
+    timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+  },
+  {
+    id: 'ct4',
+    type: 'lead_charge',
+    description: 'Lead: Mike R.',
+    amount: -25,
+    timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+    leadName: 'Mike R.',
+    service: 'Pipe burst',
+  },
+  {
+    id: 'ct5',
+    type: 'lead_charge',
+    description: 'Lead: Jennifer L.',
+    amount: -15,
+    timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+    leadName: 'Jennifer L.',
+    service: 'Clogged drain',
+  },
+];
+
 // Mock drafted replies
 export const MOCK_DRAFTED_REPLIES: DraftedReply[] = [
   {

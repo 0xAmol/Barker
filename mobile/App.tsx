@@ -22,6 +22,7 @@ import {
   AccountCreationScreen,
   PaywallScreen,
 } from './src/screens';
+import { TopUpScreen, PaymentScreen, TransactionsScreen } from './src/screens/main';
 import { MainTabs } from './src/navigation/MainTabs';
 
 // Define navigation param list
@@ -38,6 +39,9 @@ export type RootStackParamList = {
   AccountCreation: undefined;
   Paywall: undefined;
   MainApp: undefined;
+  TopUp: undefined;
+  Payment: { amount: number };
+  Transactions: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -122,6 +126,23 @@ export default function App() {
                 animation: 'fade',
                 gestureEnabled: false, // Prevent swipe back to onboarding
               }}
+            />
+
+            {/* Top Up Flow */}
+            <Stack.Screen
+              name="TopUp"
+              component={TopUpScreen}
+              options={{ animation: 'slide_from_right' }}
+            />
+            <Stack.Screen
+              name="Payment"
+              component={PaymentScreen}
+              options={{ animation: 'slide_from_right', gestureEnabled: false }}
+            />
+            <Stack.Screen
+              name="Transactions"
+              component={TransactionsScreen}
+              options={{ animation: 'slide_from_right' }}
             />
             </Stack.Navigator>
           </NavigationContainer>

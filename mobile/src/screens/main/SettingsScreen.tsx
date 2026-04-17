@@ -9,8 +9,17 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fontSize, spacing, borderRadius } from '../../constants/theme';
-import { MOCK_STATS } from '../../data/mockData';
+import { MOCK_STATS, MOCK_CREDIT_BALANCE, MOCK_LAST_TOP_UP, MOCK_CREDIT_TRANSACTIONS } from '../../data/mockData';
+
+function formatDaysAgo(date: Date): string {
+  const days = Math.floor((Date.now() - date.getTime()) / (24 * 60 * 60 * 1000));
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  return `${days} days ago`;
+}
 
 interface SettingRowProps {
   label: string;
@@ -46,6 +55,7 @@ function SettingRow({ label, value, onPress, showChevron = true, rightElement, i
 }
 
 export function SettingsScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const [isBarkerActive, setIsBarkerActive] = useState(MOCK_STATS.agentStatus === 'active');
   const [notifyNewLeads, setNotifyNewLeads] = useState(true);
   const [notifyDailySummary, setNotifyDailySummary] = useState(true);
@@ -58,11 +68,65 @@ export function SettingsScreen() {
     );
   };
 
+  // Get recent transactions for preview
+  const recentTransactions = MOCK_CREDIT_TRANSACTIONS.slice(0, 3);
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <Text style={styles.title}>Settings</Text>
+        </View>
+
+        {/* Lead Credits */}
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.creditsCard}
+            onPress={() => navigation.navigate('TopUp')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.creditsLeft}>
+              <View style={styles.creditsHeader}>
+                <Text style={styles.creditsLabel}>Lead Credits</Text>
+                <Text style={styles.chevron}>{'›'}</Text>
+              </View>
+              <Text style={styles.creditsAmount}>${MOCK_CREDIT_BALANCE.toFixed(2)} available</Text>
+              <Text style={styles.creditsSubtext}>Last topped up {formatDaysAgo(MOCK_LAST_TOP_UP)}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.topUpButton}
+              onPress={() => navigation.navigate('TopUp')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.topUpButtonText}>Top up</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </View>
+
+        {/* Recent Transactions */}
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.transactionsCard}
+            onPress={() => navigation.navigate('Transactions')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.transactionsHeader}>
+              <Text style={styles.transactionsLabel}>Recent Transactions</Text>
+              <Text style={styles.chevron}>{'›'}</Text>
+            </View>
+            {recentTransactions.map((tx, index) => (
+              <View key={tx.id} style={[styles.transactionPreview, index === recentTransactions.length - 1 && styles.transactionPreviewLast]}>
+                <Text style={styles.transactionText} numberOfLines={1}>
+                  {tx.type === 'lead_charge'
+                    ? `Lead: ${tx.leadName} · ${tx.service}`
+                    : 'Top up'}
+                </Text>
+                <Text style={[styles.transactionAmount, tx.amount > 0 && styles.transactionPositive]}>
+                  {tx.amount > 0 ? '+' : ''}${tx.amount}
+                </Text>
+              </View>
+            ))}
+          </TouchableOpacity>
         </View>
 
         {/* Agent Control */}
@@ -261,5 +325,95 @@ const styles = StyleSheet.create({
     fontSize: fontSize.footnote,
     color: colors.textTertiary,
     marginTop: spacing.xl,
+  },
+  // Credits Card
+  creditsCard: {
+    marginHorizontal: spacing.screen,
+    backgroundColor: colors.backgroundCard,
+    borderRadius: borderRadius.md,
+    padding: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  creditsLeft: {
+    flex: 1,
+  },
+  creditsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  creditsLabel: {
+    fontSize: fontSize.body,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  creditsAmount: {
+    fontSize: fontSize.title,
+    fontWeight: '700',
+    color: colors.accent,
+    letterSpacing: -0.3,
+    marginBottom: 2,
+  },
+  creditsSubtext: {
+    fontSize: fontSize.footnote,
+    color: colors.textSecondary,
+  },
+  topUpButton: {
+    backgroundColor: colors.accent,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.sm,
+    marginLeft: spacing.md,
+  },
+  topUpButtonText: {
+    fontSize: fontSize.subhead,
+    fontWeight: '600',
+    color: colors.background,
+  },
+  // Transactions Card
+  transactionsCard: {
+    marginHorizontal: spacing.screen,
+    backgroundColor: colors.backgroundCard,
+    borderRadius: borderRadius.md,
+    padding: spacing.lg,
+  },
+  transactionsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+  },
+  transactionsLabel: {
+    fontSize: fontSize.body,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  transactionPreview: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.separator,
+  },
+  transactionPreviewLast: {
+    borderBottomWidth: 0,
+    paddingBottom: 0,
+  },
+  transactionText: {
+    fontSize: fontSize.subhead,
+    color: colors.textSecondary,
+    flex: 1,
+    marginRight: spacing.md,
+  },
+  transactionAmount: {
+    fontSize: fontSize.subhead,
+    fontWeight: '500',
+    color: colors.textPrimary,
+  },
+  transactionPositive: {
+    color: colors.success,
   },
 });
