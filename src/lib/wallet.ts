@@ -1,7 +1,10 @@
 // Agent wallet management via Crossmint
 // Creates and manages USDC-SPL wallets on Solana for each Barker agent
 
-const CROSSMINT_API = process.env.CROSSMINT_API_URL || "https://staging.crossmint.com/api/2022-06-09";
+import { Keypair } from "@solana/web3.js";
+import bs58 from "bs58";
+
+const CROSSMINT_API = process.env.CROSSMINT_API_URL || "https://staging.crossmint.com/api/v1-alpha2";
 const CROSSMINT_KEY = process.env.CROSSMINT_API_KEY!;
 
 interface WalletResponse {
@@ -20,7 +23,13 @@ interface TransferResponse {
 }
 
 // Create a new Solana smart wallet for a Barker agent
-export async function createAgentWallet(agentId: string): Promise<string> {
+// Returns both the wallet address and the admin signer keypair (base58 encoded)
+export async function createAgentWallet(agentId: string): Promise<{ address: string; signerPrivateKey: string }> {
+  // Generate a new keypair to act as the admin signer
+  const adminKeypair = Keypair.generate();
+  const adminPublicKey = adminKeypair.publicKey.toBase58();
+  const adminPrivateKey = bs58.encode(adminKeypair.secretKey);
+
   const res = await fetch(`${CROSSMINT_API}/wallets`, {
     method: "POST",
     headers: {
@@ -29,9 +38,12 @@ export async function createAgentWallet(agentId: string): Promise<string> {
     },
     body: JSON.stringify({
       type: "solana-smart-wallet",
-      linkedUser: `agent:${agentId}`,
+      linkedUser: `userId:${agentId}`,
       config: {
-        adminSigner: { type: "solana-keypair" },
+        adminSigner: {
+          type: "solana-keypair",
+          address: adminPublicKey,
+        },
       },
     }),
   });
@@ -41,7 +53,10 @@ export async function createAgentWallet(agentId: string): Promise<string> {
   }
 
   const data: WalletResponse = await res.json();
-  return data.address;
+  return {
+    address: data.address,
+    signerPrivateKey: adminPrivateKey,
+  };
 }
 
 // Get wallet balance (USDC-SPL)

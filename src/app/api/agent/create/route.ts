@@ -50,11 +50,26 @@ export async function POST(req: NextRequest) {
     // Step 4: Create Solana wallet for the agent (Phase 2)
     let walletAddress: string | null = null;
     try {
-      walletAddress = await createAgentWallet(agent.id);
+      const wallet = await createAgentWallet(agent.id);
+      walletAddress = wallet.address;
+
+      // Update wallet address (signer key stored separately if column exists)
+      const { error: updateError } = await supabase
+        .from("agents")
+        .update({ wallet_address: wallet.address })
+        .eq("id", agent.id);
+
+      if (updateError) {
+        console.warn("Failed to save wallet address:", updateError);
+      }
+
+      // Try to store signer key (may fail if column doesn't exist)
       await supabase
         .from("agents")
-        .update({ wallet_address: walletAddress })
-        .eq("id", agent.id);
+        .update({ wallet_signer_key: wallet.signerPrivateKey })
+        .eq("id", agent.id)
+        .then(() => {})
+        .catch(() => console.warn("wallet_signer_key column may not exist"));
     } catch (e) {
       // Wallet creation is non-blocking — agent works without it in Phase 1
       console.warn("Wallet creation skipped:", e);
