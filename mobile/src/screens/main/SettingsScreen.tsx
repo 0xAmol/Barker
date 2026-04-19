@@ -14,6 +14,48 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, fontSize, spacing, borderRadius } from '../../constants/theme';
 import { MOCK_STATS, MOCK_CREDIT_BALANCE, MOCK_LAST_TOP_UP, MOCK_CREDIT_TRANSACTIONS } from '../../data/mockData';
 
+type ChannelType = 'google' | 'facebook' | 'instagram' | 'nextdoor';
+type ChannelStatus = 'connected' | 'not_connected' | 'manual';
+
+interface ChannelInfo {
+  type: ChannelType;
+  name: string;
+  icon: string;
+  status: ChannelStatus;
+  subtitle: string;
+}
+
+const CHANNELS: ChannelInfo[] = [
+  {
+    type: 'google',
+    name: 'Google Business Profile',
+    icon: 'G',
+    status: 'connected',
+    subtitle: 'Auto-responds to reviews, posts updates',
+  },
+  {
+    type: 'facebook',
+    name: 'Facebook Groups',
+    icon: 'f',
+    status: 'not_connected',
+    subtitle: 'Spots demand, drafts replies for you',
+  },
+  {
+    type: 'instagram',
+    name: 'Instagram Business',
+    icon: '📸',
+    status: 'not_connected',
+    subtitle: 'Auto-post content to your feed',
+  },
+  {
+    type: 'nextdoor',
+    name: 'Nextdoor',
+    icon: '🏘️',
+    status: 'manual',
+    subtitle: 'We find posts, you reply in-app',
+  },
+];
+
 function formatDaysAgo(date: Date): string {
   const days = Math.floor((Date.now() - date.getTime()) / (24 * 60 * 60 * 1000));
   if (days === 0) return 'Today';
@@ -52,6 +94,69 @@ function SettingRow({ label, value, onPress, showChevron = true, rightElement, i
     );
   }
   return content;
+}
+
+interface ChannelRowProps {
+  channel: ChannelInfo;
+  onPress: () => void;
+  isLast?: boolean;
+}
+
+function ChannelRow({ channel, onPress, isLast }: ChannelRowProps) {
+  const getStatusColor = () => {
+    switch (channel.status) {
+      case 'connected':
+        return colors.success;
+      default:
+        return colors.textSecondary;
+    }
+  };
+
+  const getStatusText = () => {
+    switch (channel.status) {
+      case 'connected':
+        return 'Connected';
+      case 'manual':
+        return 'Manual';
+      default:
+        return 'Not connected';
+    }
+  };
+
+  const showConnectButton = channel.status === 'not_connected';
+  const showInfoIcon = channel.status === 'manual';
+
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.6}>
+      <View style={styles.channelRow}>
+        <View style={styles.channelIcon}>
+          <Text style={styles.channelIconText}>{channel.icon}</Text>
+        </View>
+        <View style={styles.channelContent}>
+          <View style={styles.channelHeader}>
+            <Text style={styles.channelName}>{channel.name}</Text>
+            <View style={styles.channelRight}>
+              {showConnectButton ? (
+                <View style={styles.connectBadge}>
+                  <Text style={styles.connectBadgeText}>Connect</Text>
+                </View>
+              ) : (
+                <View style={styles.statusRow}>
+                  <Text style={[styles.channelStatus, { color: getStatusColor() }]}>
+                    {getStatusText()}
+                  </Text>
+                  {showInfoIcon && <Text style={styles.infoIcon}>ⓘ</Text>}
+                </View>
+              )}
+              <Text style={styles.chevron}>›</Text>
+            </View>
+          </View>
+          <Text style={styles.channelSubtitle}>{channel.subtitle}</Text>
+        </View>
+        {!isLast && <View style={styles.channelSeparator} />}
+      </View>
+    </TouchableOpacity>
+  );
 }
 
 export function SettingsScreen() {
@@ -101,6 +206,21 @@ export function SettingsScreen() {
               <Text style={styles.topUpButtonText}>Top up</Text>
             </TouchableOpacity>
           </TouchableOpacity>
+        </View>
+
+        {/* Connected Channels */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Connected Channels</Text>
+          <View style={styles.card}>
+            {CHANNELS.map((channel, index) => (
+              <ChannelRow
+                key={channel.type}
+                channel={channel}
+                onPress={() => navigation.navigate('ChannelDetail', { channel: channel.type })}
+                isLast={index === CHANNELS.length - 1}
+              />
+            ))}
+          </View>
         </View>
 
         {/* Recent Transactions */}
@@ -415,5 +535,78 @@ const styles = StyleSheet.create({
   },
   transactionPositive: {
     color: colors.success,
+  },
+  // Channel Row Styles
+  channelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
+  },
+  channelIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.sm,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  channelIconText: {
+    fontSize: 18,
+  },
+  channelContent: {
+    flex: 1,
+  },
+  channelHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  channelName: {
+    fontSize: fontSize.body,
+    color: colors.textPrimary,
+    fontWeight: '500',
+    flex: 1,
+  },
+  channelRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  channelStatus: {
+    fontSize: fontSize.subhead,
+  },
+  infoIcon: {
+    fontSize: 12,
+    color: colors.textTertiary,
+    marginLeft: 4,
+  },
+  connectBadge: {
+    backgroundColor: colors.accent,
+    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.sm,
+  },
+  connectBadgeText: {
+    fontSize: fontSize.footnote,
+    fontWeight: '600',
+    color: colors.background,
+  },
+  channelSubtitle: {
+    fontSize: fontSize.footnote,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  channelSeparator: {
+    position: 'absolute',
+    bottom: 0,
+    left: spacing.lg + 40 + spacing.md,
+    right: 0,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.separator,
   },
 });

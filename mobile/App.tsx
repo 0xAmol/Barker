@@ -22,7 +22,7 @@ import {
   AccountCreationScreen,
   PaywallScreen,
 } from './src/screens';
-import { TopUpScreen, PaymentScreen, TransactionsScreen } from './src/screens/main';
+import { TopUpScreen, PaymentScreen, TransactionsScreen, ChannelDetailScreen } from './src/screens/main';
 import { MainTabs } from './src/navigation/MainTabs';
 
 // Define navigation param list
@@ -42,6 +42,7 @@ export type RootStackParamList = {
   TopUp: undefined;
   Payment: { amount: number };
   Transactions: undefined;
+  ChannelDetail: { channel: 'google' | 'facebook' | 'instagram' | 'nextdoor' };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -142,6 +143,11 @@ export default function App() {
             <Stack.Screen
               name="Transactions"
               component={TransactionsScreen}
+              options={{ animation: 'slide_from_right' }}
+            />
+            <Stack.Screen
+              name="ChannelDetail"
+              component={ChannelDetailScreen}
               options={{ animation: 'slide_from_right' }}
             />
             </Stack.Navigator>

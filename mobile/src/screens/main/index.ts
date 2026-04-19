@@ -5,3 +5,4 @@ export { SettingsScreen } from './SettingsScreen';
 export { TopUpScreen } from './TopUpScreen';
 export { PaymentScreen } from './PaymentScreen';
 export { TransactionsScreen } from './TransactionsScreen';
+export { ChannelDetailScreen } from './ChannelDetailScreen';
