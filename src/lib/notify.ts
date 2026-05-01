@@ -7,6 +7,16 @@ const client = twilio(
 );
 const FROM_NUMBER = process.env.TWILIO_PHONE_NUMBER!;
 
+// Send a generic SMS
+export async function sendSms(to: string, body: string) {
+  const message = await client.messages.create({
+    body,
+    from: FROM_NUMBER,
+    to,
+  });
+  return { sid: message.sid };
+}
+
 // Send a new lead notification to the business owner
 export async function notifyNewLead(agent: Agent, lead: Lead): Promise<string> {
   const urgencyEmoji: Record<string, string> = {

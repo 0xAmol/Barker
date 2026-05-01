@@ -296,6 +296,59 @@ export async function discoverLocalGroups(
 }
 
 // ============================================
+// Tool-handler wrapper: scan specific groups by URL
+// ============================================
+export async function scanFacebookGroups({
+  groupUrls,
+  keywords,
+  serviceArea,
+  sinceHours = 24,
+}: {
+  groupUrls: string[];
+  keywords: string[];
+  serviceArea?: string | string[];
+  sinceHours?: number;
+}): Promise<{ id: string; text: string; author: string; url: string; posted_at: string }[]> {
+  const results: { id: string; text: string; author: string; url: string; posted_at: string }[] = [];
+
+  for (const groupUrl of groupUrls) {
+    const groupId = groupUrl.replace(/.*groups\//, "").replace(/\/.*/, "");
+    try {
+      const res = await fetch(
+        `${FB_API}/${groupId}/feed?` +
+          new URLSearchParams({
+            access_token: FB_ACCESS_TOKEN,
+            fields: "id,message,from,created_time,permalink_url",
+            limit: "50",
+            since: Math.floor((Date.now() - sinceHours * 60 * 60 * 1000) / 1000).toString(),
+          }),
+        { next: { revalidate: 900 } }
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+
+      for (const post of data.data || []) {
+        if (!post.message) continue;
+        const lower = post.message.toLowerCase();
+        if (keywords.some((kw) => lower.includes(kw.toLowerCase()))) {
+          results.push({
+            id: post.id,
+            text: post.message,
+            author: post.from?.name || "Unknown",
+            url: post.permalink_url || `https://facebook.com/${post.id}`,
+            posted_at: post.created_time,
+          });
+        }
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return results;
+}
+
+// ============================================
 // Keyword expansion
 // Turns service names into search keywords
 // ============================================

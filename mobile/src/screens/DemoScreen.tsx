@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -13,188 +12,69 @@ import { useOnboarding } from '../context/OnboardingContext';
 import { BusinessAnalysis } from '../types';
 import { colors, spacing, borderRadius } from '../constants/theme';
 
+const API_BASE = 'http://localhost:3001';
+
 type Props = {
   navigation: NativeStackNavigationProp<any>;
 };
 
-// Mock search results based on business name
-interface SearchResult {
-  id: string;
-  name: string;
-  rating: number;
-  reviewCount: number;
-  location: string;
-  verified: boolean;
-}
-
-const generateMockResults = (businessName: string, city: string): SearchResult[] => {
-  const baseName = businessName.trim() || 'Johnson';
-  return [
-    {
-      id: '1',
-      name: `${baseName} Roofing`,
-      rating: 4.8,
-      reviewCount: 142,
-      location: city || 'Katy TX',
-      verified: true,
-    },
-    {
-      id: '2',
-      name: `${baseName} & Sons Roofing`,
-      rating: 3.2,
-      reviewCount: 8,
-      location: 'Dallas TX',
-      verified: false,
-    },
-    {
-      id: 'manual',
-      name: "None of these — I'll enter my info manually",
-      rating: 0,
-      reviewCount: 0,
-      location: '',
-      verified: false,
-    },
-  ];
-};
-
-// Mock analysis result for selected business
-const generateMockAnalysis = (result: SearchResult, serviceType: string | null): BusinessAnalysis => ({
-  businessName: result.name,
-  services: [
-    'Roof repair',
-    'Roof replacement',
-    'Leak detection',
-    'Gutter installation',
-    'Storm damage repair',
-  ],
-  serviceArea: [result.location.split(' ')[0], 'Sugar Land', 'Houston'],
-  brandVoice:
-    'Friendly and professional. Emphasizes quality workmanship and honest pricing. Customers mention "reliable" and "great communication."',
-  reviews: [
-    {
-      text: 'Fixed our roof leak in one visit. Professional crew, cleaned up everything.',
-      author: 'Sarah M.',
-      rating: 5,
-    },
-    {
-      text: 'Best price we got and the quality was excellent. Highly recommend!',
-      author: 'Mike R.',
-      rating: 5,
-    },
-  ],
-  facebookGroups: [
-    { name: `${result.location.split(' ')[0]} Community`, members: '45K' },
-    { name: 'Houston Home Owners', members: '128K' },
-    { name: 'Sugar Land Recommendations', members: '32K' },
-    { name: 'West Houston Neighbors', members: '67K' },
-    { name: `${result.location.split(' ')[0]} Area Buy/Sell/Trade`, members: '89K' },
-  ],
-  quotePageUrl: `barker.app/q/${result.name.toLowerCase().replace(/\s+/g, '-')}`,
-  sampleReply:
-    `Hey! I'm Dave with ${result.name} — we do a lot of work in this area. Happy to come out for a free estimate. Here's our page: [link]`,
-});
-
-type Stage = 'input' | 'searching' | 'results' | 'manual' | 'analyzing' | 'analysis';
+type Stage = 'input' | 'analyzing' | 'analysis' | 'error';
 
 export function DemoScreen({ navigation }: Props) {
   const { state, setBusinessAnalysis } = useOnboarding();
   const [stage, setStage] = useState<Stage>('input');
   const [businessName, setBusinessName] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
   const [analysis, setAnalysis] = useState<BusinessAnalysis | null>(null);
-
-  // Manual form state
-  const [manualName, setManualName] = useState('');
-  const [manualServices, setManualServices] = useState('');
-  const [manualDifferentiator, setManualDifferentiator] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const userCity = state.locations[0] || 'Katy TX';
 
-  const handleSearch = async () => {
+  const handleSubmit = async () => {
     if (!businessName.trim()) return;
 
-    setStage('searching');
+    setStage('analyzing');
+    setErrorMessage('');
 
-    // Simulate search API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch(`${API_BASE}/api/agent/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessName: businessName.trim(),
+          location: userCity,
+        }),
+      });
 
-    const results = generateMockResults(businessName, userCity);
-    setSearchResults(results);
-    setStage('results');
-  };
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(errorBody || `Request failed (${response.status})`);
+      }
 
-  const handleSelectResult = async (result: SearchResult) => {
-    if (result.id === 'manual') {
-      setManualName(businessName);
-      setStage('manual');
-      return;
+      const data = await response.json();
+
+      const analysisResult: BusinessAnalysis = {
+        businessName: data.businessName ?? businessName.trim(),
+        services: data.services ?? [],
+        serviceArea: data.serviceArea ?? state.locations,
+        brandVoice: data.brandVoice ?? '',
+        reviews: data.reviews ?? [],
+        facebookGroups: data.facebookGroups ?? [],
+        quotePageUrl: data.quotePageUrl ?? '',
+        sampleReply: data.sampleReply ?? '',
+      };
+
+      setAnalysis(analysisResult);
+      setBusinessAnalysis(analysisResult);
+      setStage('analysis');
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Something went wrong. Please try again.');
+      setStage('error');
     }
-
-    setSelectedResult(result);
-    setStage('analyzing');
-
-    // Simulate analysis API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const analysisResult = generateMockAnalysis(result, state.serviceType);
-    setAnalysis(analysisResult);
-    setBusinessAnalysis(analysisResult);
-    setStage('analysis');
-  };
-
-  const handleManualSubmit = async () => {
-    if (!manualName.trim()) return;
-
-    setStage('analyzing');
-
-    // Simulate analysis API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    const manualResult: SearchResult = {
-      id: 'manual-entry',
-      name: manualName,
-      rating: 0,
-      reviewCount: 0,
-      location: userCity,
-      verified: false,
-    };
-
-    const analysisResult: BusinessAnalysis = {
-      businessName: manualName,
-      services: manualServices.split(',').map(s => s.trim()).filter(Boolean),
-      serviceArea: state.locations.length > 0 ? state.locations : [userCity],
-      brandVoice: manualDifferentiator || 'Professional and reliable service.',
-      reviews: [],
-      facebookGroups: [
-        { name: `${userCity.split(' ')[0]} Community`, members: '45K' },
-        { name: 'Houston Home Owners', members: '128K' },
-        { name: 'Local Recommendations', members: '32K' },
-      ],
-      quotePageUrl: `barker.app/q/${manualName.toLowerCase().replace(/\s+/g, '-')}`,
-      sampleReply: `Hey! I'm Dave with ${manualName} — we do a lot of work in the area. Happy to come out for a free estimate. Here's our page: [link]`,
-    };
-
-    setAnalysis(analysisResult);
-    setBusinessAnalysis(analysisResult);
-    setStage('analysis');
   };
 
   const handleContinue = () => {
     navigation.navigate('ValueDelivery');
   };
-
-  // Searching stage
-  if (stage === 'searching') {
-    return (
-      <ScreenWrapper step={8} scrollable={false}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.accent} />
-          <Text style={styles.loadingText}>Searching for your business...</Text>
-        </View>
-      </ScreenWrapper>
-    );
-  }
 
   // Analyzing stage
   if (stage === 'analyzing') {
@@ -211,124 +91,20 @@ export function DemoScreen({ navigation }: Props) {
     );
   }
 
-  // Search results stage
-  if (stage === 'results') {
+  // Error stage
+  if (stage === 'error') {
     return (
-      <ScreenWrapper step={8}>
-        <Text style={styles.headline}>Is this your business?</Text>
-        <Text style={styles.subheadline}>
-          Select your business from the results below
-        </Text>
-
-        <View style={styles.resultsList}>
-          {searchResults.map((result) => (
-            <TouchableOpacity
-              key={result.id}
-              style={[
-                styles.resultCard,
-                result.id === 'manual' && styles.resultCardManual,
-              ]}
-              onPress={() => handleSelectResult(result)}
-              activeOpacity={0.7}
-            >
-              {result.id !== 'manual' ? (
-                <>
-                  <View style={styles.resultHeader}>
-                    <Text style={styles.resultName}>{result.name}</Text>
-                    {result.verified && (
-                      <Text style={styles.verifiedBadge}>✓</Text>
-                    )}
-                  </View>
-                  <View style={styles.resultMeta}>
-                    <Text style={styles.resultRating}>
-                      {result.rating}★
-                    </Text>
-                    <Text style={styles.resultReviews}>
-                      {result.reviewCount} reviews
-                    </Text>
-                    <Text style={styles.resultLocation}>
-                      {result.location}
-                    </Text>
-                  </View>
-                </>
-              ) : (
-                <Text style={styles.manualText}>{result.name}</Text>
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <Button
-          title="← Search again"
-          variant="ghost"
-          onPress={() => setStage('input')}
-          style={styles.backButton}
-        />
-      </ScreenWrapper>
-    );
-  }
-
-  // Manual entry stage
-  if (stage === 'manual') {
-    return (
-      <ScreenWrapper
-        step={8}
-        footer={
+      <ScreenWrapper step={8} scrollable={false}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.errorIcon}>!</Text>
+          <Text style={styles.loadingText}>Something went wrong</Text>
+          <Text style={styles.loadingSubtext}>{errorMessage}</Text>
           <Button
-            title="Continue →"
-            onPress={handleManualSubmit}
-            disabled={!manualName.trim()}
-          />
-        }
-      >
-        <Text style={styles.headline}>Tell us about your business</Text>
-        <Text style={styles.subheadline}>
-          We'll use this to set up your Barker agent
-        </Text>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Business name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. Johnson Roofing"
-            placeholderTextColor={colors.textTertiary}
-            value={manualName}
-            onChangeText={setManualName}
+            title="Try again"
+            onPress={() => setStage('input')}
+            style={styles.retryButton}
           />
         </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Services you offer</Text>
-          <TextInput
-            style={[styles.input, styles.inputMultiline]}
-            placeholder="e.g. Roof repair, Roof replacement, Gutter installation"
-            placeholderTextColor={colors.textTertiary}
-            value={manualServices}
-            onChangeText={setManualServices}
-            multiline
-          />
-          <Text style={styles.hint}>Separate with commas</Text>
-        </View>
-
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>What makes you different?</Text>
-          <TextInput
-            style={[styles.input, styles.inputMultiline]}
-            placeholder="e.g. Same-day service, family-owned, 20 years experience"
-            placeholderTextColor={colors.textTertiary}
-            value={manualDifferentiator}
-            onChangeText={setManualDifferentiator}
-            multiline
-          />
-          <Text style={styles.hint}>This helps Barker write replies in your voice</Text>
-        </View>
-
-        <Button
-          title="← Back to search"
-          variant="ghost"
-          onPress={() => setStage('input')}
-          style={styles.backButton}
-        />
       </ScreenWrapper>
     );
   }
@@ -413,7 +189,7 @@ export function DemoScreen({ navigation }: Props) {
       footer={
         <Button
           title="Find My Business"
-          onPress={handleSearch}
+          onPress={handleSubmit}
           disabled={!businessName.trim()}
         />
       }
@@ -507,86 +283,22 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: spacing.sm,
   },
-  resultsList: {
-    gap: 10,
-  },
-  resultCard: {
-    backgroundColor: colors.backgroundCard,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-  },
-  resultCardManual: {
-    backgroundColor: 'transparent',
-    borderStyle: 'dashed',
-  },
-  resultHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
-  },
-  resultName: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    flex: 1,
-  },
-  verifiedBadge: {
-    fontSize: 14,
-    color: colors.success,
+  errorIcon: {
+    fontSize: 32,
     fontWeight: '700',
-    marginLeft: spacing.sm,
-  },
-  resultMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  resultRating: {
-    fontSize: 14,
-    color: colors.accent,
-    fontWeight: '600',
-  },
-  resultReviews: {
-    fontSize: 14,
-    color: colors.textTertiary,
-  },
-  resultLocation: {
-    fontSize: 14,
-    color: colors.textTertiary,
-  },
-  manualText: {
-    fontSize: 15,
-    color: colors.textSecondary,
+    color: colors.error,
+    backgroundColor: colors.backgroundCard,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     textAlign: 'center',
-  },
-  backButton: {
-    marginTop: spacing.lg,
-  },
-  formGroup: {
-    marginBottom: spacing.md,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
+    lineHeight: 48,
+    overflow: 'hidden',
     marginBottom: spacing.sm,
   },
-  input: {
-    backgroundColor: colors.backgroundCard,
-    borderRadius: borderRadius.md,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    color: colors.textPrimary,
-  },
-  inputMultiline: {
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  hint: {
-    fontSize: 12,
-    color: colors.textTertiary,
-    marginTop: spacing.xs,
+  retryButton: {
+    marginTop: spacing.lg,
+    minWidth: 160,
   },
   successHeader: {
     flexDirection: 'row',

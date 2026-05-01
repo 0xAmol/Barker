@@ -64,12 +64,14 @@ export async function POST(req: NextRequest) {
       }
 
       // Try to store signer key (may fail if column doesn't exist)
-      await supabase
-        .from("agents")
-        .update({ wallet_signer_key: wallet.signerPrivateKey })
-        .eq("id", agent.id)
-        .then(() => {})
-        .catch(() => console.warn("wallet_signer_key column may not exist"));
+      try {
+        await supabase
+          .from("agents")
+          .update({ wallet_signer_key: wallet.signerPrivateKey })
+          .eq("id", agent.id);
+      } catch {
+        console.warn("wallet_signer_key column may not exist");
+      }
     } catch (e) {
       // Wallet creation is non-blocking — agent works without it in Phase 1
       console.warn("Wallet creation skipped:", e);

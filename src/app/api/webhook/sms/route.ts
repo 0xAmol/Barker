@@ -6,7 +6,7 @@ import { parseOwnerReply } from "@/lib/notify";
 // Twilio sends incoming SMS here when an owner replies
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
+    const formData: any = await req.formData();
     const from = formData.get("From") as string;
     const body = formData.get("Body") as string;
 

@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { handleToolCall } from './tool-handlers';
 import type { BarkerAgent, AgentSession, AgentSessionResults } from './types';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) as any;
 
 // Task types and their prompts
 const TASK_PROMPTS = {

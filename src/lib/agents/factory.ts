@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { BARKER_TOOLS, BARKER_AGENT_SYSTEM_PROMPT } from './tools';
 import type { BarkerAgent } from './types';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }) as any;
 
 // Create a new managed agent for a business
 export async function createBarkerAgent(businessId: string): Promise<BarkerAgent> {

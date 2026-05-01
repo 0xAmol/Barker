@@ -20,7 +20,7 @@ import type {
 // Tool handler registry
 export async function handleToolCall(
   toolName: string,
-  toolInput: Record<string, unknown>
+  toolInput: any
 ): Promise<unknown> {
   switch (toolName) {
     case 'get_agent_context':
@@ -105,7 +105,7 @@ async function handleGetAgentContext(
 // Scan Facebook groups for demand signals
 async function handleScanFacebookGroups(
   input: ScanFacebookGroupsInput
-): Promise<ScanFacebookGroupsOutput> {
+): Promise<any> {
   const { group_urls, keywords, service_area, since_hours = 24 } = input;
 
   const posts = await scanFacebookGroups({
