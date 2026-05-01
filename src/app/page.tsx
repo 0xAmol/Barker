@@ -33,7 +33,7 @@ export default function LandingPage() {
     <div className="bk-page">
       <nav className="bk-nav">
         <div className="bk-logo"><div className="bk-logo-dot" />Barker</div>
-        <a href="#download" className="bk-nav-cta">Get the app</a>
+        <a href="/signup" className="bk-nav-cta">Get started</a>
       </nav>
 
       <section className="bk-section">
