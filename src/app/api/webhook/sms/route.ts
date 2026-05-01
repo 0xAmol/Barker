@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { parseOwnerReply } from "@/lib/notify";
 
+const DEMO_MODE = process.env.DEMO_MODE === "true";
+
 // POST /api/webhook/sms
-// Twilio sends incoming SMS here when an owner replies
+// Twilio sends incoming SMS here when an owner replies.
+// In demo mode, can also be called directly with form data to simulate a reply.
 export async function POST(req: NextRequest) {
   try {
     const formData: any = await req.formData();
@@ -24,14 +27,29 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (!agent) {
-      return twimlResponse("Sorry, I don't recognize this number. Text from the phone number you registered with.");
+      return twimlResponse(
+        "Sorry, I don't recognize this number. Text from the phone number you registered with."
+      );
+    }
+
+    // Log inbound message in demo mode
+    if (DEMO_MODE) {
+      await supabase.from("demo_messages").insert({
+        direction: "inbound",
+        from_number: from,
+        to_number: process.env.TWILIO_PHONE_NUMBER!,
+        body,
+        agent_id: agent.id,
+      });
     }
 
     // Parse the reply
     const parsed = parseOwnerReply(body);
 
     if (parsed.action === "unknown") {
-      return twimlResponse(
+      return replyAndLog(
+        agent.id,
+        from,
         "I didn't catch that. Reply WON $amount, LOST, or CALLED to update your latest lead."
       );
     }
@@ -47,7 +65,7 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (!lead) {
-      return twimlResponse("No pending leads to update.");
+      return replyAndLog(agent.id, from, "No pending leads to update.");
     }
 
     // Map action to status
@@ -65,13 +83,11 @@ export async function POST(req: NextRequest) {
     if (parsed.action === "won" && parsed.revenue) {
       updateData.revenue = parsed.revenue;
 
-      // Update agent revenue stats
       await supabase.rpc("increment_agent_revenue", {
         p_agent_id: agent.id,
         p_revenue: parsed.revenue,
       });
 
-      // Log the revenue transaction
       await supabase.from("transactions").insert({
         agent_id: agent.id,
         type: "lead_charge",
@@ -85,20 +101,35 @@ export async function POST(req: NextRequest) {
 
     await supabase.from("leads").update(updateData).eq("id", lead.id);
 
-    // Confirm to owner
     const confirmMessages: Record<string, string> = {
-      won: `Got it — marked ${lead.name} as won${parsed.revenue ? ` ($${parsed.revenue})` : ""}. Nice work!`,
+      won: `Got it — marked ${lead.name} as won${
+        parsed.revenue ? ` ($${parsed.revenue})` : ""
+      }. Nice work!`,
       lost: `Marked ${lead.name} as lost. Barker's still hunting for the next one.`,
       contacted: `Marked ${lead.name} as contacted. Let me know how it goes.`,
     };
 
-    return twimlResponse(confirmMessages[parsed.action]);
+    return replyAndLog(agent.id, from, confirmMessages[parsed.action]);
   } catch (error) {
     console.error("SMS webhook error:", error);
     return new NextResponse("<Response></Response>", {
       headers: { "Content-Type": "text/xml" },
     });
   }
+}
+
+// Helper: returns TwiML response AND logs the auto-reply to demo_messages in demo mode
+async function replyAndLog(agent_id: string, to: string, message: string) {
+  if (DEMO_MODE) {
+    await supabase.from("demo_messages").insert({
+      direction: "outbound",
+      from_number: process.env.TWILIO_PHONE_NUMBER!,
+      to_number: to,
+      body: message,
+      agent_id,
+    });
+  }
+  return twimlResponse(message);
 }
 
 function twimlResponse(message: string) {
