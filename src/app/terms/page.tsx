@@ -2,7 +2,7 @@ export const metadata = { title: 'Terms of Service — Barker' }
 
 export default function Terms() {
   return (
-    <main style={{ maxWidth: 720, margin: '0 auto', padding: '60px 24px', color: '#fff', background: '#000', fontFamily: '-apple-system, sans-serif', lineHeight: 1.6 }}>
+    <main style={{ maxWidth: 720, margin: '0 auto', padding: '60px 24px', color: '#fff', background: '#000', fontFamily: '-apple-system, sans-serif', lineHeight: 1.6, minHeight: '100vh' }}>
       <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 24 }}>Terms of Service</h1>
       <p style={{ color: '#888', marginBottom: 32 }}>Last updated: May 1, 2026</p>
 
