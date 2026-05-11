@@ -62,7 +62,7 @@ export async function createAgentWallet(agentId: string): Promise<{ address: str
 // Get wallet balance (USDC-SPL)
 export async function getWalletBalance(walletAddress: string): Promise<number> {
   const res = await fetch(
-    `${CROSSMINT_API}/wallets/${walletAddress}/balances`,
+    `${CROSSMINT_API}/wallets/${walletAddress}/balances?tokens=usdxm`,
     {
       headers: { "X-API-KEY": CROSSMINT_KEY },
     }
@@ -71,11 +71,10 @@ export async function getWalletBalance(walletAddress: string): Promise<number> {
   if (!res.ok) return 0;
 
   const data = await res.json();
-  // Find USDC balance
-  const usdc = data.balances?.find(
-    (b: any) => b.currency === "usdc" || b.token === "USDC"
-  );
-  return usdc ? parseFloat(usdc.amount) : 0;
+  // Response: [{ token: "usdc", decimals: 6, balances: { solana: "0", total: "0" } }]
+  const usdc = data.find((b: any) => b.token === "usdxm");
+  if (!usdc) return 0;
+  return parseFloat(usdc.balances.total) / Math.pow(10, usdc.decimals);
 }
 
 // Transfer USDC between wallets (agent → platform, agent → agent)
@@ -101,7 +100,7 @@ export async function transferUSDC(
               params: {
                 to: toWallet,
                 amount: amount.toString(),
-                currency: "usdc",
+                currency: "usdxm",
                 chain: "solana",
               },
             },

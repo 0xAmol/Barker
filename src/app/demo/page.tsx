@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { getWalletBalance } from '@/lib/wallet'
 
 export const metadata = { title: 'Barker — Live Demo' }
 export const dynamic = 'force-dynamic'
@@ -26,19 +27,31 @@ async function getStats() {
       .limit(50),
     supabase
       .from('agents')
-      .select('business_name, owner_phone')
+      .select('business_name, owner_phone, wallet_address')
       .eq('id', DEMO_AGENT_ID)
       .single(),
   ])
   const all = leads.data ?? []
   const won = all.filter((l) => l.status === 'won')
   const totalRevenue = won.reduce((sum, l) => sum + (Number(l.revenue) || 0), 0)
+  const walletAddress = agent.data?.wallet_address ?? null
+  let walletBalance = 0
+  if (walletAddress) {
+    try {
+      walletBalance = await getWalletBalance(walletAddress)
+    } catch (e) {
+      console.error('Balance fetch failed:', e)
+    }
+  }
+
   return {
     business_name: agent.data?.business_name ?? 'Demo agent',
     owner_phone: agent.data?.owner_phone ?? '',
     total_leads: all.length,
     won_count: won.length,
     revenue: totalRevenue,
+    wallet_address: walletAddress,
+    wallet_balance: walletBalance,
   }
 }
 
@@ -72,6 +85,38 @@ export default async function DemoPage() {
           <Stat label="Won" value={stats.won_count} />
           <Stat label="Pipeline" value={`$${stats.revenue.toLocaleString()}`} />
         </div>
+        {/* Solana wallet card */}
+        {stats.wallet_address && (
+          <div style={{ marginBottom: 32, padding: 20, background: '#0c0c0c', borderRadius: 14, border: '1px solid #1a1a1a' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14, gap: 12, flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontSize: 11, color: '#E5B547', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 6 }}>
+                  ⚡ {stats.business_name} — Solana wallet
+                </div>
+                <div style={{ fontSize: 13, color: '#888', maxWidth: 480 }}>
+                  Each Barker agent gets a programmable Solana smart wallet via Crossmint. Lead fees and agent-to-agent referrals settle in USDC.
+                </div>
+              </div>
+              <a
+                href={`https://explorer.solana.com/address/${stats.wallet_address}?cluster=devnet`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ background: '#E5B547', color: '#000', padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}
+              >
+                View on Solana Explorer →
+              </a>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginTop: 8 }}>
+              <div style={{ background: '#000', borderRadius: 10, padding: '12px 14px', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 12, color: '#ccc', wordBreak: 'break-all' }}>
+                {stats.wallet_address}
+              </div>
+              <div style={{ background: '#000', borderRadius: 10, padding: '12px 14px', textAlign: 'right' }}>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#E5B547' }}>{stats.wallet_balance.toFixed(2)}</div>
+                <div style={{ fontSize: 10, color: '#666', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 2 }}>USDXM balance</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Phone + thread */}
         <div style={{ display: 'flex', justifyContent: 'center' }}>
