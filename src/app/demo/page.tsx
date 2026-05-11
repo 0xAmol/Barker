@@ -55,13 +55,23 @@ async function getStats() {
   }
 }
 
+async function getDemandSignals() {
+  const { data } = await supabase
+    .from('demand_signals')
+    .select('id, platform, post_text, author_handle, location_hint, drafted_reply, relevance_score')
+    .eq('agent_id', DEMO_AGENT_ID)
+    .order('relevance_score', { ascending: false })
+    .limit(3)
+  return data ?? []
+}
+
 function fmtTime(iso: string) {
   const d = new Date(iso)
   return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 }
 
 export default async function DemoPage() {
-  const [messages, stats] = await Promise.all([getMessages(), getStats()])
+  const [messages, stats, demandSignals] = await Promise.all([getMessages(), getStats(), getDemandSignals()])
   const ownerPhone = stats.owner_phone
 
   return (
@@ -115,6 +125,38 @@ export default async function DemoPage() {
                 <div style={{ fontSize: 10, color: '#666', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 2 }}>USDXM balance</div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Demand feed — AI finds posts and drafts replies */}
+        {demandSignals.length > 0 && (
+          <div style={{ marginBottom: 32 }}>
+            <div style={{ fontSize: 11, color: '#E5B547', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 14, paddingLeft: 4 }}>
+              🔍 Demand feed · {demandSignals.length} new posts · drafted in {stats.business_name}'s voice
+            </div>
+            {demandSignals.map((d: any) => (
+              <div key={d.id} style={{ background: '#0c0c0c', borderRadius: 14, padding: 16, marginBottom: 10, border: '1px solid #1a1a1a' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10, gap: 12 }}>
+                  <div style={{ fontSize: 10, color: '#888', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 600 }}>
+                    {d.platform === 'facebook' ? '📘 Facebook' : '🏘️ Nextdoor'} · {d.location_hint}
+                  </div>
+                  <div style={{ fontSize: 10, color: '#E5B547', fontWeight: 700 }}>
+                    {Math.round(d.relevance_score * 100)}% match
+                  </div>
+                </div>
+                <div style={{ fontSize: 13, color: '#ccc', lineHeight: 1.5, marginBottom: 12 }}>
+                  <span style={{ fontWeight: 600, color: '#fff' }}>{d.author_handle}:</span> {d.post_text}
+                </div>
+                <div style={{ background: '#000', borderRadius: 10, padding: '12px 14px', borderLeft: '3px solid #E5B547' }}>
+                  <div style={{ fontSize: 9, color: '#E5B547', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>
+                    ⚡ Drafted reply
+                  </div>
+                  <div style={{ fontSize: 12.5, color: '#ddd', lineHeight: 1.55 }}>
+                    {d.drafted_reply}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
