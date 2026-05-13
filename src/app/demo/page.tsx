@@ -220,16 +220,7 @@ export default async function DemoPage() {
           </div>
         </div>
 
-        {/* How to test */}
-        <div style={{ marginTop: 40, padding: 20, background: '#0c0c0c', borderRadius: 14, fontSize: 13, color: '#888', lineHeight: 1.6 }}>
-          <div style={{ fontSize: 11, color: '#E5B547', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>Trigger a demo lead</div>
-          <code style={{ display: 'block', background: '#000', padding: 12, borderRadius: 8, color: '#ccc', fontSize: 12, overflow: 'auto', whiteSpace: 'pre' }}>{`curl -X POST https://barkerapp.vercel.app/api/leads/capture \\
-  -H "Content-Type: application/json" \\
-  -d '{"agent_id":"${DEMO_AGENT_ID}","name":"Sarah M.","service_needed":"Bathroom sink leak","location":"Heights","urgency":"today","source_platform":"facebook"}'`}</code>
-          <div style={{ fontSize: 11, color: '#E5B547', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', margin: '16px 0 10px' }}>Reply WON</div>
-          <code style={{ display: 'block', background: '#000', padding: 12, borderRadius: 8, color: '#ccc', fontSize: 12, overflow: 'auto', whiteSpace: 'pre' }}>{`curl -X POST https://barkerapp.vercel.app/api/webhook/sms \\
-  -d "From=${encodeURIComponent(ownerPhone)}" -d "Body=WON 250"`}</code>
-        </div>
+
       </div>
     </div>
   )

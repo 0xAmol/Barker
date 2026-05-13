@@ -18,6 +18,7 @@ const posts = [
     relevance_score: 0.94,
     intent: 'seeking_service',
     status: 'new',
+    drafted_reply: "Hey Marcus — Dave with Heights Plumbing here. Sounds like a clog past the trap, pretty common with disposals. I can swing by today, $89 to diagnose and most clogs we knock out same visit. Send me a text at (713) 555-0199 if you want me out there.",
   },
   {
     agent_id: DEMO_AGENT_ID,
@@ -29,6 +30,7 @@ const posts = [
     relevance_score: 0.91,
     intent: 'asking_recommendation',
     status: 'new',
+    drafted_reply: "Hey Linda — Dave at Heights Plumbing. Sorry about the heater, that timing is brutal. We stock 40 and 50 gal Bradford White on the truck, can usually do same-day install for around $1,650 all-in. Text (713) 555-0199 with your address and I'll send you a firm quote in 15 min.",
   },
   {
     agent_id: DEMO_AGENT_ID,
@@ -40,6 +42,7 @@ const posts = [
     relevance_score: 0.87,
     intent: 'seeking_service',
     status: 'new',
+    drafted_reply: "Hey James — Dave with Heights Plumbing. Half-bath adds run $3,800-$5,200 depending on if your stack is close. Happy to come out and scope it free, then send you a fixed bid. Best to text me at (713) 555-0199 with a couple times that work.",
   },
 ]
 
